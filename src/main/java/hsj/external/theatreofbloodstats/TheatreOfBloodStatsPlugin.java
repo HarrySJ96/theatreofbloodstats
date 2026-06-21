@@ -75,8 +75,7 @@ import net.runelite.client.util.Text;
 @PluginDescriptor(
 	name = "Theatre of Blood Stats",
 	description = "Theatre of Blood room splits and damage",
-	tags = {"combat", "raid", "pve", "pvm", "bosses", "tob"},
-	enabledByDefault = false
+	tags = {"combat", "raid", "pve", "pvm", "bosses", "tob"}
 )
 public class TheatreOfBloodStatsPlugin extends Plugin
 {
