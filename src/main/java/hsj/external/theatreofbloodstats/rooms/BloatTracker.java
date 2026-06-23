@@ -108,7 +108,9 @@ public class BloatTracker extends RoomTracker
 	@Override
 	public void reset()
 	{
+		startTick = -1;
 		personalDamage = 0;
 		totalDamage = 0;
+		downTimes.clear();
 	}
 }
