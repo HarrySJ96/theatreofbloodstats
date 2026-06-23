@@ -255,7 +255,7 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
-		if (roomTracker == null || event.getType() != ChatMessageType.GAMEMESSAGE || !Text.removeTags(event.getMessage()).contains("Wave"))
+		if (roomTracker == null || event.getType() != ChatMessageType.GAMEMESSAGE || !event.getMessage().contains("Wave"))
 		{
 			return;
 		}
