@@ -3,7 +3,6 @@ package hsj.external.theatreofbloodstats;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-import net.runelite.api.Point;
 import net.runelite.api.gameval.NpcID;
 import java.text.DecimalFormat;
 import java.util.Set;

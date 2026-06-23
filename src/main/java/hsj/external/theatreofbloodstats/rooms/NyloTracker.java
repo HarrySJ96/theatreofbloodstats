@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
-import net.runelite.api.Point;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
