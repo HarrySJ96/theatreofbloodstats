@@ -51,11 +51,6 @@ public final class TobConstants
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE_HARD, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE_HARD, NpcID.TOB_NYLOCAS_FIGHTING_MELEE_HARD, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE_HARD
 	};
 
-	static
-	{
-		Arrays.sort(NYLOCAS_IDS);
-	}
-
 	public static final int[] NYLOCAS_VALID_SPAWNS = {
 		packRegionCoords(17, 24), packRegionCoords(17, 25), packRegionCoords(18, 24), packRegionCoords(18, 25), // West lane
 		packRegionCoords(31, 9), packRegionCoords(31, 10), packRegionCoords(32, 9), packRegionCoords(32, 10), // South lane
@@ -69,6 +64,7 @@ public final class TobConstants
 
 	static
 	{
+		Arrays.sort(NYLOCAS_IDS);
 		Arrays.sort(NYLOCAS_VALID_SPAWNS);
 	}
 
