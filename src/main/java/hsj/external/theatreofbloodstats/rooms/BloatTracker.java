@@ -87,7 +87,14 @@ public class BloatTracker extends RoomTracker
 			roomTime = plugin.formatTime(roomTicks);
 			for (int i = 0; i < downTimes.size(); i++)
 			{
-				splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append("</br>");
+				if (i == 0)
+				{
+					splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append("</br>");
+				}
+				else
+				{
+					splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append(" (").append(plugin.formatTime(downTimes.get(i) - downTimes.get(i - 1))).append(")</br>");
+				}
 				plugin.buildSplitMessage(messages, "Down " + (i + 1), downTimes.get(i), i == 0 ? 0 : downTimes.get(i - 1));
 			}
 
