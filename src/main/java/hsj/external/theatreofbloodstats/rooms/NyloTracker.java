@@ -16,6 +16,7 @@ import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_VALID_SPAWNS
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVE;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVES_TOTAL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
@@ -69,7 +70,7 @@ public class NyloTracker extends RoomTracker
 				break;
 		}
 
-		if (!NYLOCAS_IDS.contains(npcId))
+		if (Arrays.binarySearch(NYLOCAS_IDS, npcId) < 0)
 		{
 			return;
 		}
@@ -100,7 +101,7 @@ public class NyloTracker extends RoomTracker
 	public void onNpcDespawned(NpcDespawned event)
 	{
 		int npcId = event.getNpc().getId();
-		if (!NYLOCAS_IDS.contains(npcId))
+		if (Arrays.binarySearch(NYLOCAS_IDS, npcId) < 0)
 		{
 			return;
 		}

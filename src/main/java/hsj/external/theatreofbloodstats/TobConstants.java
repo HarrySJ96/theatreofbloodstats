@@ -1,6 +1,7 @@
 package hsj.external.theatreofbloodstats;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 import net.runelite.api.Point;
 import net.runelite.api.gameval.NpcID;
@@ -39,7 +40,7 @@ public final class TobConstants
 	public static final int SOTETSEG_IMAGE_ID = 25751;
 	public static final int XARPUS_IMAGE_ID = 25752;
 	public static final int VERZIK_IMAGE_ID = 22473;
-	public static final Set<Integer> NYLOCAS_IDS = ImmutableSet.of(
+	public static final int[] NYLOCAS_IDS = {
 		NpcID.TOB_NYLOCAS_INCOMING_MAGIC, NpcID.TOB_NYLOCAS_BIG_INCOMING_MAGIC, NpcID.TOB_NYLOCAS_FIGHTING_MAGIC, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MAGIC,
 		NpcID.TOB_NYLOCAS_INCOMING_MAGIC_STORY, NpcID.TOB_NYLOCAS_BIG_INCOMING_MAGIC_STORY, NpcID.TOB_NYLOCAS_FIGHTING_MAGIC_STORY, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MAGIC_STORY,
 		NpcID.TOB_NYLOCAS_INCOMING_MAGIC_HARD, NpcID.TOB_NYLOCAS_BIG_INCOMING_MAGIC_HARD, NpcID.TOB_NYLOCAS_FIGHTING_MAGIC_HARD, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MAGIC_HARD,
@@ -49,7 +50,13 @@ public final class TobConstants
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE, NpcID.TOB_NYLOCAS_FIGHTING_MELEE, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE,
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE_STORY, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE_STORY, NpcID.TOB_NYLOCAS_FIGHTING_MELEE_STORY, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE_STORY,
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE_HARD, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE_HARD, NpcID.TOB_NYLOCAS_FIGHTING_MELEE_HARD, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE_HARD
-	);
+	};
+
+	static
+	{
+		Arrays.sort(NYLOCAS_IDS);
+	}
+
 	public static final Set<Point> NYLOCAS_VALID_SPAWNS = ImmutableSet.of(
 		new Point(17, 24), new Point(17, 25), new Point(18, 24), new Point(18, 25),
 		new Point(31, 9), new Point(31, 10), new Point(32, 9), new Point(32, 10),
