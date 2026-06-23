@@ -57,11 +57,21 @@ public final class TobConstants
 		Arrays.sort(NYLOCAS_IDS);
 	}
 
-	public static final Set<Point> NYLOCAS_VALID_SPAWNS = ImmutableSet.of(
-		new Point(17, 24), new Point(17, 25), new Point(18, 24), new Point(18, 25),
-		new Point(31, 9), new Point(31, 10), new Point(32, 9), new Point(32, 10),
-		new Point(46, 24), new Point(46, 25), new Point(47, 24), new Point(47, 25)
-	);
+	public static final int[] NYLOCAS_VALID_SPAWNS = {
+		packRegionCoords(17, 24), packRegionCoords(17, 25), packRegionCoords(18, 24), packRegionCoords(18, 25), // West lane
+		packRegionCoords(31, 9), packRegionCoords(31, 10), packRegionCoords(32, 9), packRegionCoords(32, 10), // South lane
+		packRegionCoords(46, 24), packRegionCoords(46, 25), packRegionCoords(47, 24), packRegionCoords(47, 25)  // East lane
+	};
+
+	public static int packRegionCoords(int x, int y)
+	{
+		return (x << 16) | y;
+	}
+
+	static
+	{
+		Arrays.sort(NYLOCAS_VALID_SPAWNS);
+	}
 
 	private TobConstants()
 	{

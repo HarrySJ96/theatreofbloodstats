@@ -15,6 +15,7 @@ import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_VALID_SPAWNS;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVE;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVES_TOTAL;
+import static hsj.external.theatreofbloodstats.TobConstants.packRegionCoords;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -77,9 +78,9 @@ public class NyloTracker extends RoomTracker
 
 		currentNylos++;
 		WorldPoint worldPoint = WorldPoint.fromLocalInstance(client, npc.getLocalLocation());
-		Point spawnLoc = new Point(worldPoint.getRegionX(), worldPoint.getRegionY());
+		int packedLoc = packRegionCoords(worldPoint.getRegionX(), worldPoint.getRegionY());
 
-		if (!NYLOCAS_VALID_SPAWNS.contains(spawnLoc))
+		if (Arrays.binarySearch(NYLOCAS_VALID_SPAWNS, packedLoc) < 0)
 		{
 			return;
 		}
