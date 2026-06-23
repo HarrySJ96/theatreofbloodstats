@@ -52,9 +52,9 @@ public final class TobConstants
 	};
 
 	public static final int[] NYLOCAS_VALID_SPAWNS = {
-		packRegionCoords(17, 24), packRegionCoords(17, 25), packRegionCoords(18, 24), packRegionCoords(18, 25), // West lane
-		packRegionCoords(31, 9), packRegionCoords(31, 10), packRegionCoords(32, 9), packRegionCoords(32, 10), // South lane
-		packRegionCoords(46, 24), packRegionCoords(46, 25), packRegionCoords(47, 24), packRegionCoords(47, 25)  // East lane
+		packRegionCoords(17, 24), packRegionCoords(17, 25), packRegionCoords(18, 24), packRegionCoords(18, 25),
+		packRegionCoords(31, 9), packRegionCoords(31, 10), packRegionCoords(32, 9), packRegionCoords(32, 10),
+		packRegionCoords(46, 24), packRegionCoords(46, 25), packRegionCoords(47, 24), packRegionCoords(47, 25)
 	};
 
 	public static int packRegionCoords(int x, int y)
