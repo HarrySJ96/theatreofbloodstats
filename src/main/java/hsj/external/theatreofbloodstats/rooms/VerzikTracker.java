@@ -47,6 +47,7 @@ public class VerzikTracker extends RoomTracker
 			case NpcID.VERZIK_PHASE1_TO2_TRANSITION:
 			case NpcID.VERZIK_PHASE1_TO2_TRANSITION_STORY:
 			case NpcID.VERZIK_PHASE1_TO2_TRANSITION_HARD:
+				bossNpc = event.getNpc();
 				verzikP1time = client.getTickCount() - startTick;
 				verzikP1personal = personalDamage;
 				verzikP1total = totalDamage;
@@ -54,10 +55,16 @@ public class VerzikTracker extends RoomTracker
 			case NpcID.VERZIK_PHASE2_TO3_TRANSITION:
 			case NpcID.VERZIK_PHASE2_TO3_TRANSITION_STORY:
 			case NpcID.VERZIK_PHASE2_TO3_TRANSITION_HARD:
+				bossNpc = event.getNpc();
 				verzikP2time = client.getTickCount() - startTick;
 				verzikP2personal = personalDamage - verzikP1personal;
 				verzikP2total = totalDamage - verzikP1total;
 				verzikP2healed = totalHealing;
+				break;
+			case NpcID.VERZIK_PHASE3:
+			case NpcID.VERZIK_PHASE3_STORY:
+			case NpcID.VERZIK_PHASE3_HARD:
+				bossNpc = event.getNpc();
 				break;
 		}
 	}
@@ -70,6 +77,7 @@ public class VerzikTracker extends RoomTracker
 			case NpcID.VERZIK_PHASE1:
 			case NpcID.VERZIK_PHASE1_STORY:
 			case NpcID.VERZIK_PHASE1_HARD:
+				bossNpc = event.getNpc();
 				startTick = client.getTickCount();
 				break;
 		}
@@ -91,7 +99,7 @@ public class VerzikTracker extends RoomTracker
 		double p1percent = verzikP1total > 0 ? (verzikP1personal / verzikP1total) * 100 : 0;
 		double p2percent = verzikP2total > 0 ? (verzikP2personal / verzikP2total) * 100 : 0;
 		double p3percent = p3total > 0 ? (p3personal / p3total) * 100 : 0;
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 
 		String roomTime = "";
 		String splits = "";
@@ -108,7 +116,6 @@ public class VerzikTracker extends RoomTracker
 			splits = plugin.buildSplitString("P1 - " + plugin.formatTime(verzikP1time),
 				"P2 - " + plugin.formatTime(verzikP2time) + " (" + plugin.formatTime(verzikP2time - verzikP1time) + ")",
 				"P3 - " + roomTime + " (" + plugin.formatTime(roomTicks - verzikP2time) + ")");
-
 
 			plugin.buildSplitMessage(messages, "P1", verzikP1time, 0);
 			plugin.buildSplitMessage(messages, "P2", verzikP2time, verzikP1time);
@@ -141,7 +148,7 @@ public class VerzikTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(VERZIK_IMAGE_ID, "Verzik", roomTime, DECIMAL_FORMAT.format(percent), damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(VERZIK_IMAGE_ID, "Verzik", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.VERZIK, box);
 		reset();
@@ -161,5 +168,6 @@ public class VerzikTracker extends RoomTracker
 		personalDamage = 0;
 		totalDamage = 0;
 		totalHealing = 0;
+		bossNpc = null;
 	}
 }

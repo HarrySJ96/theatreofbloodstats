@@ -68,6 +68,11 @@ public class NyloTracker extends RoomTracker
 			case NpcID.NYLOCAS_BOSS_SPAWNING_HARD:
 				bossSpawnTime = client.getTickCount() - startTick;
 				break;
+			case NpcID.NYLOCAS_BOSS_MELEE:
+			case NpcID.NYLOCAS_BOSS_MELEE_STORY:
+			case NpcID.NYLOCAS_BOSS_MELEE_HARD:
+					bossNpc = event.getNpc();
+				break;
 		}
 
 		if (Arrays.binarySearch(NYLOCAS_IDS, npcId) < 0)
@@ -133,7 +138,7 @@ public class NyloTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 		String roomTime = "";
 		String splits = "";
 		String healing = MSG_TOTAL_HEALING + " - " + DMG_FORMAT.format(totalHealing);
@@ -159,7 +164,7 @@ public class NyloTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, MSG_TOTAL_HEALING, totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(NYLOCAS_IMAGE_ID, "Nylocas", roomTime, DECIMAL_FORMAT.format(percent), damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(NYLOCAS_IMAGE_ID, "Nylocas", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.NYLOCAS, box);
 		reset();
@@ -179,5 +184,6 @@ public class NyloTracker extends RoomTracker
 		nyloWave = 0;
 		personalDamage = 0;
 		totalDamage = 0;
+		bossNpc = null;
 	}
 }

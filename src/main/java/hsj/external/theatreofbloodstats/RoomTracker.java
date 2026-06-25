@@ -1,6 +1,5 @@
 package hsj.external.theatreofbloodstats;
 
-import net.runelite.api.Actor;
 import net.runelite.api.Client;
 import net.runelite.api.Hitsplat;
 import net.runelite.api.HitsplatID;
@@ -24,6 +23,7 @@ public abstract class RoomTracker
 	protected int totalDamage = 0;
 	protected int totalHealing = 0;
 	protected int startTick = -1;
+	protected NPC bossNpc = null;
 
 	public abstract int[] getRegionIds();
 
@@ -55,14 +55,7 @@ public abstract class RoomTracker
 
 	public void onHitsplatApplied(HitsplatApplied event)
 	{
-		Actor actor = event.getActor();
-		if (!(actor instanceof NPC) || actor.getName() == null)
-		{
-			return;
-		}
-
-		Boss boss = Boss.fromName(actor.getName());
-		if (boss == null)
+		if (bossNpc == null || event.getActor() != bossNpc)
 		{
 			return;
 		}
@@ -70,7 +63,11 @@ public abstract class RoomTracker
 		Hitsplat hitsplat = event.getHitsplat();
 		int amount = hitsplat.getAmount();
 
-		if (hitsplat.isMine())
+		if (hitsplat.getHitsplatType() == HitsplatID.HEAL)
+		{
+			totalHealing += amount;
+		}
+		else if (hitsplat.isMine())
 		{
 			personalDamage += amount;
 			totalDamage += amount;
@@ -78,10 +75,6 @@ public abstract class RoomTracker
 		else if (hitsplat.isOthers())
 		{
 			totalDamage += amount;
-		}
-		else if (hitsplat.getHitsplatType() == HitsplatID.HEAL)
-		{
-			totalHealing += amount;
 		}
 	}
 

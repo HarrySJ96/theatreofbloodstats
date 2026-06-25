@@ -15,8 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import net.runelite.api.Actor;
 import net.runelite.api.Client;
+import net.runelite.api.NPC;
+import net.runelite.api.WorldView;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.VarbitID;
@@ -35,6 +38,26 @@ public class BloatTracker extends RoomTracker
 	public int[] getRegionIds()
 	{
 		return BLOAT_REGION_IDS;
+	}
+
+	@Override
+	public void onGameTick(GameTick event)
+	{
+		if (bossNpc == null)
+		{
+			WorldView worldview = client.getTopLevelWorldView();
+			if (worldview != null)
+			{
+				for (NPC npc : worldview.npcs())
+				{
+					if (npc != null && Boss.BLOAT.getName().equals(npc.getName()))
+					{
+						bossNpc = npc;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -76,7 +99,7 @@ public class BloatTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 		String roomTime = "";
 		StringBuilder splits = new StringBuilder();
 		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";
@@ -106,7 +129,7 @@ public class BloatTracker extends RoomTracker
 		plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(BLOAT_IMAGE_ID, "Bloat", roomTime, DECIMAL_FORMAT.format(percent), damage, splits.toString(), "");
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(BLOAT_IMAGE_ID, "Bloat", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits.toString(), "");
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.BLOAT, box);
 		reset();
@@ -119,5 +142,6 @@ public class BloatTracker extends RoomTracker
 		personalDamage = 0;
 		totalDamage = 0;
 		downTimes.clear();
+		bossNpc = null;
 	}
 }

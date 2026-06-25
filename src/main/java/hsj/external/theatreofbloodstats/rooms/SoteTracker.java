@@ -16,6 +16,7 @@ import java.util.List;
 import net.runelite.api.Client;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.NpcChanged;
+import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.gameval.NpcID;
 import net.runelite.client.util.Text;
 
@@ -38,6 +39,19 @@ public class SoteTracker extends RoomTracker
 	}
 
 	@Override
+	public void onNpcSpawned(NpcSpawned event)
+	{
+		switch (event.getNpc().getId())
+		{
+			case NpcID.TOB_SOTETSEG_COMBAT:
+			case NpcID.TOB_SOTETSEG_COMBAT_STORY:
+			case NpcID.TOB_SOTETSEG_COMBAT_HARD:
+				bossNpc = event.getNpc();
+				break;
+		}
+	}
+
+	@Override
 	public void onNpcChanged(NpcChanged event)
 	{
 		int npcId = event.getNpc().getId();
@@ -46,6 +60,7 @@ public class SoteTracker extends RoomTracker
 			case NpcID.TOB_SOTETSEG_COMBAT:
 			case NpcID.TOB_SOTETSEG_COMBAT_STORY:
 			case NpcID.TOB_SOTETSEG_COMBAT_HARD:
+				bossNpc = event.getNpc();
 				if (startTick == -1)
 				{
 					startTick = client.getTickCount();
@@ -80,7 +95,7 @@ public class SoteTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 		String roomTime = "";
 		String splits = "";
 		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";
@@ -102,7 +117,7 @@ public class SoteTracker extends RoomTracker
 		plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(SOTETSEG_IMAGE_ID, "Sotetseg", roomTime, DECIMAL_FORMAT.format(percent), damage, splits, "");
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(SOTETSEG_IMAGE_ID, "Sotetseg", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, "");
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.SOTETSEG, box);
 		reset();
@@ -118,5 +133,6 @@ public class SoteTracker extends RoomTracker
 		sote33time = 0;
 		personalDamage = 0;
 		totalDamage = 0;
+		bossNpc = null;
 	}
 }

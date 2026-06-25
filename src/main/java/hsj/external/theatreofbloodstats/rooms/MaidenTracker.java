@@ -46,6 +46,7 @@ public class MaidenTracker extends RoomTracker
 			case NpcID.TOB_MAIDEN_100:
 			case NpcID.TOB_MAIDEN_100_STORY:
 			case NpcID.TOB_MAIDEN_100_HARD:
+				bossNpc = event.getNpc();
 				startTick = client.getTickCount();
 				break;
 		}
@@ -93,7 +94,7 @@ public class MaidenTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 		String roomTime = "";
 		String splits = "";
 		String healing = MSG_TOTAL_HEALING + " - " + DMG_FORMAT.format(totalHealing);
@@ -121,7 +122,7 @@ public class MaidenTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, MSG_TOTAL_HEALING, totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(MAIDEN_IMAGE_ID, "Maiden", roomTime, DECIMAL_FORMAT.format(percent), damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(MAIDEN_IMAGE_ID, "Maiden", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.MAIDEN, box);
 		reset();
@@ -137,5 +138,6 @@ public class MaidenTracker extends RoomTracker
 		personalDamage = 0;
 		totalDamage = 0;
 		totalHealing = 0;
+		bossNpc = null;
 	}
 }

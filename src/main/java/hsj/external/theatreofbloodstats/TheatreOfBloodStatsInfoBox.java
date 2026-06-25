@@ -17,6 +17,7 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 	private final String damage;
 	private final String splits;
 	private final String healed;
+	private String tooltipText;
 	private final TheatreOfBloodStatsConfig config;
 
 
@@ -40,32 +41,11 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 		this.damage = damage;
 		this.splits = splits;
 		this.healed = healed;
+		this.tooltipText = buildTooltip();
 		setPriority(InfoBoxPriority.LOW);
 	}
 
-	@Override
-	public String getText()
-	{
-		switch (config.infoBoxText())
-		{
-			case NONE:
-				return "";
-			case TIME:
-				return StringUtils.substringBefore(time, ".");
-			case DAMAGE_PERCENT:
-				return Math.round(Double.parseDouble(percent)) + "%";
-		}
-		return "";
-	}
-
-	@Override
-	public Color getTextColor()
-	{
-		return Color.GREEN;
-	}
-
-	@Override
-	public String getTooltip()
+	private String buildTooltip()
 	{
 		if (!config.infoBoxTooltip())
 		{
@@ -100,6 +80,38 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 		}
 
 		return sb.toString();
+	}
+
+	public void rebuildTooltip()
+	{
+		tooltipText = buildTooltip();
+	}
+
+	@Override
+	public String getText()
+	{
+		switch (config.infoBoxText())
+		{
+			case NONE:
+				return "";
+			case TIME:
+				return StringUtils.substringBefore(time, ".");
+			case DAMAGE_PERCENT:
+				return percent;
+		}
+		return "";
+	}
+
+	@Override
+	public Color getTextColor()
+	{
+		return Color.GREEN;
+	}
+
+	@Override
+	public String getTooltip()
+	{
+		return tooltipText;
 	}
 
 	@Override

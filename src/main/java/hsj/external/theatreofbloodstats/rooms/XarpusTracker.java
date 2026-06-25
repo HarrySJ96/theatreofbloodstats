@@ -50,6 +50,7 @@ public class XarpusTracker extends RoomTracker
 			case NpcID.TOB_XARPUS_FEEDING_STORY:
 			case NpcID.TOB_XARPUS_FEEDING_HARD:
 				startTick = client.getTickCount();
+				bossNpc = event.getNpc();
 				break;
 			case NpcID.TOB_XARPUS_COMBAT:
 			case NpcID.TOB_XARPUS_COMBAT_STORY:
@@ -82,7 +83,7 @@ public class XarpusTracker extends RoomTracker
 
 		List<String> messages = new ArrayList<>();
 		double xarpusPostScreech = personalDamage - xarpusPreScreech;
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 		double preScreechPercent = xarpusPreScreechTotal > 0 ? ((double) xarpusPreScreech / xarpusPreScreechTotal) * 100 : 0;
 
 		double xarpusPostTotal = totalDamage - xarpusPreScreechTotal;
@@ -126,7 +127,7 @@ public class XarpusTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(XARPUS_IMAGE_ID, "Xarpus", roomTime, DECIMAL_FORMAT.format(percent), damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(XARPUS_IMAGE_ID, "Xarpus", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.XARPUS, box);
 		reset();
@@ -143,5 +144,6 @@ public class XarpusTracker extends RoomTracker
 		personalDamage = 0;
 		totalDamage = 0;
 		totalHealing = 0;
+		bossNpc = null;
 	}
 }

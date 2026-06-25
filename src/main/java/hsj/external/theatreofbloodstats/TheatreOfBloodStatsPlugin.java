@@ -65,6 +65,7 @@ import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -124,10 +125,34 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	}
 
 	@Override
-	protected void shutDown() throws Exception
+	protected void shutDown()
 	{
 		resetAll();
 		resetAllInfoBoxes();
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!"theatreofbloodstats".equals(event.getGroup()) || infoBoxes.isEmpty())
+		{
+			return;
+		}
+
+		switch (event.getKey())
+		{
+			case "infoBoxTooltip":
+			case "infoBoxTooltipDmg":
+			case "infoBoxTooltipHealed":
+			case "infoBoxTooltipSplits":
+			{
+				for (TheatreOfBloodStatsInfoBox box : infoBoxes.values())
+				{
+					box.rebuildTooltip();
+				}
+				break;
+			}
+		}
 	}
 
 	@Subscribe
@@ -135,7 +160,17 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	{
 		int[] regions = event.getWorldView().getMapRegions();
 
-		if (TOB_REGION_IDS.stream().noneMatch(arrayInList -> Arrays.equals(arrayInList, regions)))
+		boolean isTobRegion = false;
+		for (int[] tobRegion : TOB_REGION_IDS)
+		{
+			if (Arrays.equals(tobRegion, regions))
+			{
+				isTobRegion = true;
+				break;
+			}
+		}
+
+		if (!isTobRegion)
 		{
 			if (!infoBoxes.isEmpty())
 			{
