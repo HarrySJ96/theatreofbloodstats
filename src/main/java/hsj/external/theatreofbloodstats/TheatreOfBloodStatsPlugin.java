@@ -98,12 +98,6 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 
 	public final Map<Boss, TheatreOfBloodStatsInfoBox> infoBoxes = new EnumMap<>(Boss.class);
 	private RoomTracker roomTracker;
-	private MaidenTracker maidenTracker;
-	private BloatTracker bloatTracker;
-	private NyloTracker nyloTracker;
-	private SoteTracker soteTracker;
-	private XarpusTracker xarpusTracker;
-	private VerzikTracker verzikTracker;
 	private List<RoomTracker> allTrackers;
 
 	@Provides
@@ -115,13 +109,14 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		maidenTracker = new MaidenTracker(client, this);
-		bloatTracker = new BloatTracker(client, this);
-		nyloTracker = new NyloTracker(client, this);
-		soteTracker = new SoteTracker(client, this);
-		xarpusTracker = new XarpusTracker(client, this);
-		verzikTracker = new VerzikTracker(client, this);
-		allTrackers = List.of(maidenTracker, bloatTracker, nyloTracker, soteTracker, xarpusTracker, verzikTracker);
+		allTrackers = List.of(
+			new MaidenTracker(client, this),
+			new BloatTracker(client, this),
+			new NyloTracker(client, this),
+			new SoteTracker(client, this),
+			new XarpusTracker(client, this),
+			new VerzikTracker(client, this)
+		);
 	}
 
 	@Override
@@ -129,13 +124,6 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	{
 		resetAll();
 		resetAllInfoBoxes();
-
-		maidenTracker = null;
-		bloatTracker = null;
-		nyloTracker = null;
-		soteTracker = null;
-		xarpusTracker = null;
-		verzikTracker = null;
 		allTrackers = null;
 	}
 
@@ -420,12 +408,10 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 
 	private void resetAll()
 	{
-		maidenTracker.reset();
-		bloatTracker.reset();
-		nyloTracker.reset();
-		soteTracker.reset();
-		xarpusTracker.reset();
-		verzikTracker.reset();
+		for (RoomTracker tracker : allTrackers)
+		{
+			tracker.reset();
+		}
 		roomTracker = null;
 	}
 
