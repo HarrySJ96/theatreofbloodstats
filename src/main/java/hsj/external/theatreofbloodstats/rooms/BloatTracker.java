@@ -79,7 +79,7 @@ public class BloatTracker extends RoomTracker
 	{
 		Actor npc = event.getActor();
 		String npcName = npc.getName();
-		if (npcName == null || !npc.getName().equals(Boss.BLOAT.getName()))
+		if (npcName == null || !npcName.equals(Boss.BLOAT.getName()))
 		{
 			return;
 		}
