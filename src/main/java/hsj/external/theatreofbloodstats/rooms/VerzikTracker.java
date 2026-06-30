@@ -99,7 +99,7 @@ public class VerzikTracker extends RoomTracker
 		double p1percent = verzikP1total > 0 ? ((double) verzikP1personal / verzikP1total) * 100 : 0;
 		double p2percent = verzikP2total > 0 ? ((double) verzikP2personal / verzikP2total) * 100 : 0;
 		double p3percent = p3total > 0 ? (p3personal / p3total) * 100 : 0;
-		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
+		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
 
 		String roomTime = "";
 		String splits = "";
@@ -148,7 +148,7 @@ public class VerzikTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(VERZIK_IMAGE_ID, "Verzik", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(VERZIK_IMAGE_ID, "Verzik", roomTime, percent, damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.VERZIK, box);
 		reset();

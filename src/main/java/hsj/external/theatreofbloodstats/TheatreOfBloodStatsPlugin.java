@@ -366,7 +366,7 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 
 	}
 
-	public TheatreOfBloodStatsInfoBox createInfoBox(int itemId, String room, String time, String percent, String damage, String splits, String healed)
+	public TheatreOfBloodStatsInfoBox createInfoBox(int itemId, String room, String time, double percent, String damage, String splits, String healed)
 	{
 		BufferedImage image = itemManager.getImage(itemId);
 		return new TheatreOfBloodStatsInfoBox(image, config, this, room, time, percent, damage, splits, healed);

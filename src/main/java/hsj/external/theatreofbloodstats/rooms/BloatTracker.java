@@ -7,7 +7,6 @@ import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
 import static hsj.external.theatreofbloodstats.TobConstants.BLOAT_IMAGE_ID;
 import static hsj.external.theatreofbloodstats.TobConstants.BLOAT_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.BLOAT_WAVE;
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
@@ -99,7 +98,7 @@ public class BloatTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
+		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
 		String roomTime = "";
 		StringBuilder splits = new StringBuilder();
 		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";
@@ -129,7 +128,7 @@ public class BloatTracker extends RoomTracker
 		plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(BLOAT_IMAGE_ID, "Bloat", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits.toString(), "");
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(BLOAT_IMAGE_ID, "Bloat", roomTime, percent, damage, splits.toString(), "");
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.BLOAT, box);
 		reset();

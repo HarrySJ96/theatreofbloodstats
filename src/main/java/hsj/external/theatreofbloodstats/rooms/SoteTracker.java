@@ -4,7 +4,6 @@ import hsj.external.theatreofbloodstats.Boss;
 import hsj.external.theatreofbloodstats.RoomTracker;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsInfoBox;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
@@ -95,7 +94,7 @@ public class SoteTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
+		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
 		String roomTime = "";
 		String splits = "";
 		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";
@@ -117,7 +116,7 @@ public class SoteTracker extends RoomTracker
 		plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(SOTETSEG_IMAGE_ID, "Sotetseg", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, "");
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(SOTETSEG_IMAGE_ID, "Sotetseg", roomTime, percent, damage, splits, "");
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.SOTETSEG, box);
 		reset();

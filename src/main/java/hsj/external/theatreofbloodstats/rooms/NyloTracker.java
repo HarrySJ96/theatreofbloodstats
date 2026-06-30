@@ -4,7 +4,6 @@ import hsj.external.theatreofbloodstats.Boss;
 import hsj.external.theatreofbloodstats.RoomTracker;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsInfoBox;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
@@ -138,7 +137,7 @@ public class NyloTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
+		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
 		String roomTime = "";
 		String splits = "";
 		String healing = MSG_TOTAL_HEALING + " - " + DMG_FORMAT.format(totalHealing);
@@ -164,7 +163,7 @@ public class NyloTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, MSG_TOTAL_HEALING, totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(NYLOCAS_IMAGE_ID, "Nylocas", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(NYLOCAS_IMAGE_ID, "Nylocas", roomTime, percent, damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.NYLOCAS, box);
 		reset();

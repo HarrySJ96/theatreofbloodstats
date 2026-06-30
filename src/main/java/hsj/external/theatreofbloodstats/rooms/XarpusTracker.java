@@ -127,7 +127,7 @@ public class XarpusTracker extends RoomTracker
 		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
 		plugin.sendChatMessage(messages);
 
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(XARPUS_IMAGE_ID, "Xarpus", roomTime, DECIMAL_FORMAT.format(percent) + "%", damage, splits, healing);
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(XARPUS_IMAGE_ID, "Xarpus", roomTime, percent, damage, splits, healing);
 		plugin.infoBoxManager.addInfoBox(box);
 		plugin.infoBoxes.put(Boss.XARPUS, box);
 		reset();

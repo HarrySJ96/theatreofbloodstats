@@ -1,5 +1,6 @@
 package hsj.external.theatreofbloodstats;
 
+import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import lombok.Getter;
@@ -13,7 +14,9 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 
 	private final String room;
 	private final String time;
-	private final String percent;
+	private final double percent;
+	private final String toolTipPercent;
+	private final String infoBoxPercent;
 	private final String damage;
 	private final String splits;
 	private final String healed;
@@ -27,7 +30,7 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 		TheatreOfBloodStatsPlugin plugin,
 		String room,
 		String time,
-		String percent,
+		double percent,
 		String damage,
 		String splits,
 		String healed
@@ -38,6 +41,8 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 		this.room = room;
 		this.time = StringUtils.substringBefore(time, ".");
 		this.percent = percent;
+		this.toolTipPercent = DECIMAL_FORMAT.format(percent) + "%";
+		this.infoBoxPercent = Math.round(percent) + "%";
 		this.damage = damage;
 		this.splits = splits;
 		this.healed = healed;
@@ -67,7 +72,7 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 
 		if (config.infoBoxTooltipDmg() && !StringUtils.isEmpty(damage) && !damage.equals("0"))
 		{
-			sb.append(damage).append(" (").append(percent).append("%)");
+			sb.append(damage).append(" (").append(toolTipPercent).append(")");
 			if (config.infoBoxTooltipHealed())
 			{
 				sb.append("</br>");
@@ -97,7 +102,7 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 			case TIME:
 				return time;
 			case DAMAGE_PERCENT:
-				return percent;
+				return infoBoxPercent;
 		}
 		return "";
 	}
