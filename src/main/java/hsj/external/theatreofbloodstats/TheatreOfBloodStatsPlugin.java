@@ -402,6 +402,11 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 		}
 	}
 
+	public double percentOf(double personal, double total)
+	{
+		return total > 0 ? (personal / total) * 100 : 0;
+	}
+
 	public String buildSplitString(String... lines)
 	{
 		return String.join("</br>", lines);

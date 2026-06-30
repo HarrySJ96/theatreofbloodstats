@@ -98,7 +98,7 @@ public class BloatTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = plugin.percentOf(personalDamage, totalDamage);
 		String roomTime = "";
 		StringBuilder splits = new StringBuilder();
 		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";

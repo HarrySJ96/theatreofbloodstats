@@ -137,7 +137,7 @@ public class NyloTracker extends RoomTracker
 		}
 
 		List<String> messages = new ArrayList<>();
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double percent = plugin.percentOf(personalDamage, totalDamage);
 		String roomTime = "";
 		String splits = "";
 		String healing = MSG_TOTAL_HEALING + " - " + DMG_FORMAT.format(totalHealing);

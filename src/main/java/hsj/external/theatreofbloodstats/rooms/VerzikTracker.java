@@ -96,10 +96,10 @@ public class VerzikTracker extends RoomTracker
 		double p3total = totalDamage - (verzikP1total + verzikP2total);
 		int p3healed = totalHealing - verzikP2healed;
 
-		double p1percent = verzikP1total > 0 ? ((double) verzikP1personal / verzikP1total) * 100 : 0;
-		double p2percent = verzikP2total > 0 ? ((double) verzikP2personal / verzikP2total) * 100 : 0;
-		double p3percent = p3total > 0 ? (p3personal / p3total) * 100 : 0;
-		double percent = totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0;
+		double p1percent = plugin.percentOf(verzikP1personal, verzikP1total);
+		double p2percent = plugin.percentOf(verzikP2personal, verzikP2total);
+		double p3percent = plugin.percentOf(p3personal, p3total);
+		double percent = plugin.percentOf(personalDamage, totalDamage);
 
 		String roomTime = "";
 		String splits = "";

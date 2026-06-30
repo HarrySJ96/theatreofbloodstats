@@ -83,8 +83,8 @@ public class XarpusTracker extends RoomTracker
 
 		List<String> messages = new ArrayList<>();
 		double xarpusPostScreech = personalDamage - xarpusPreScreech;
-		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
-		double preScreechPercent = xarpusPreScreechTotal > 0 ? ((double) xarpusPreScreech / xarpusPreScreechTotal) * 100 : 0;
+		double percent = plugin.percentOf(personalDamage, totalDamage);
+		double preScreechPercent = plugin.percentOf(xarpusPreScreech, xarpusPreScreechTotal);
 
 		double xarpusPostTotal = totalDamage - xarpusPreScreechTotal;
 		double postScreechPercent = xarpusPostTotal > 0 ? (xarpusPostScreech / xarpusPostTotal) * 100 : 0;
