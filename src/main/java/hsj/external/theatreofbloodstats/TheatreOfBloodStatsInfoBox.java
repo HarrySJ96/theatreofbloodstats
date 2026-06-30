@@ -36,7 +36,7 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 		super(image, plugin);
 		this.config = config;
 		this.room = room;
-		this.time = time;
+		this.time = StringUtils.substringBefore(time, ".");
 		this.percent = percent;
 		this.damage = damage;
 		this.splits = splits;
@@ -95,7 +95,7 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 			case NONE:
 				return "";
 			case TIME:
-				return StringUtils.substringBefore(time, ".");
+				return time;
 			case DAMAGE_PERCENT:
 				return percent;
 		}
