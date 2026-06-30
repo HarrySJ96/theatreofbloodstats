@@ -312,7 +312,8 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 
 		messages.add(new ChatMessageBuilder()
 			.append(ChatColorType.NORMAL)
-			.append(phaseName + " - ")
+			.append(phaseName)
+			.append(" - ")
 			.append(ChatColorType.HIGHLIGHT)
 			.append(timeString)
 			.build());
@@ -328,9 +329,13 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 		double percent = total > 0 ? (personal / total) * 100 : 0;
 		messages.add(new ChatMessageBuilder()
 			.append(ChatColorType.NORMAL)
-			.append(prefix + " - ")
+			.append(prefix)
+			.append(" - ")
 			.append(ChatColorType.HIGHLIGHT)
-			.append(DMG_FORMAT.format(personal) + " (" + DECIMAL_FORMAT.format(percent) + "%)")
+			.append(DMG_FORMAT.format(personal))
+			.append(" (")
+			.append(DECIMAL_FORMAT.format(percent))
+			.append("%)")
 			.build());
 	}
 
@@ -343,7 +348,8 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 
 		messages.add(new ChatMessageBuilder()
 			.append(ChatColorType.NORMAL)
-			.append(prefix + " - ")
+			.append(prefix)
+			.append(" - ")
 			.append(ChatColorType.HIGHLIGHT)
 			.append(DMG_FORMAT.format(healed))
 			.build());
