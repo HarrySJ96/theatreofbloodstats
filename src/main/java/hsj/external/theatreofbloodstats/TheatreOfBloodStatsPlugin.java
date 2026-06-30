@@ -177,7 +177,7 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 
 		for (RoomTracker tracker : allTrackers)
 		{
-			if (Arrays.equals(tracker.getRegionIds(), regions))
+			if (Arrays.equals(tracker.getRegionIds(), regions) && tracker != roomTracker)
 			{
 				tracker.reset();
 				roomTracker = tracker;
