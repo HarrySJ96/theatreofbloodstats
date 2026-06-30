@@ -122,7 +122,7 @@ public class MaidenTracker extends RoomTracker
 		plugin.sendChatMessage(messages);
 
 		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(MAIDEN_IMAGE_ID, "Maiden", roomTime, percent, damage, splits, healing);
-		plugin.infoBoxManager.addInfoBox(box);
+		plugin.addInfoBox(Boss.MAIDEN, box);
 		plugin.infoBoxes.put(Boss.MAIDEN, box);
 		reset();
 	}

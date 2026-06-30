@@ -386,6 +386,16 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 		return new TheatreOfBloodStatsInfoBox(image, config, this, room, time, percent, damage, splits, healed);
 	}
 
+	public void addInfoBox(Boss boss, TheatreOfBloodStatsInfoBox box)
+	{
+		TheatreOfBloodStatsInfoBox old = infoBoxes.get(boss);
+		if (old != null)
+		{
+			infoBoxManager.removeInfoBox(old);
+		}
+		infoBoxManager.addInfoBox(box);
+	}
+
 	public String formatTime(int ticks)
 	{
 		int millis = ticks * TICK_LENGTH;

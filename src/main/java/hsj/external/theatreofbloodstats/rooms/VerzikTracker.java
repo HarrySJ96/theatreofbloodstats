@@ -149,7 +149,7 @@ public class VerzikTracker extends RoomTracker
 		plugin.sendChatMessage(messages);
 
 		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(VERZIK_IMAGE_ID, "Verzik", roomTime, percent, damage, splits, healing);
-		plugin.infoBoxManager.addInfoBox(box);
+		plugin.addInfoBox(Boss.VERZIK, box);
 		plugin.infoBoxes.put(Boss.VERZIK, box);
 		reset();
 	}
