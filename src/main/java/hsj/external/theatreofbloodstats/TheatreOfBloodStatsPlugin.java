@@ -129,6 +129,14 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	{
 		resetAll();
 		resetAllInfoBoxes();
+
+		maidenTracker = null;
+		bloatTracker = null;
+		nyloTracker = null;
+		soteTracker = null;
+		xarpusTracker = null;
+		verzikTracker = null;
+		allTrackers = null;
 	}
 
 	@Subscribe
