@@ -50,14 +50,14 @@ import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.VarbitChanged;
-import net.runelite.api.events.WorldViewLoaded;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.NpcChanged;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.OverheadTextChanged;
+import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.events.WorldViewLoaded;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -78,25 +78,19 @@ import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 )
 public class TheatreOfBloodStatsPlugin extends Plugin
 {
+	public final Map<Boss, TheatreOfBloodStatsInfoBox> infoBoxes = new EnumMap<>(Boss.class);
 	@Inject
 	private Client client;
-
 	@Inject
 	private TheatreOfBloodStatsConfig config;
-
 	@Inject
 	private ChatMessageManager chatMessageManager;
-
 	@Inject
 	private InfoBoxManager infoBoxManager;
-
 	@Inject
 	private ItemManager itemManager;
-
 	@Inject
 	private ConfigManager configManager;
-
-	public final Map<Boss, TheatreOfBloodStatsInfoBox> infoBoxes = new EnumMap<>(Boss.class);
 	private RoomTracker roomTracker;
 	private List<RoomTracker> allTrackers;
 

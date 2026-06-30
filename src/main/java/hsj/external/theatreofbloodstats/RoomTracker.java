@@ -49,13 +49,13 @@ public abstract class RoomTracker
 	protected int startTick = -1;
 	protected NPC bossNpc = null;
 
-	public abstract int[] getRegionIds();
-
 	public RoomTracker(Client client, TheatreOfBloodStatsPlugin plugin)
 	{
 		this.client = client;
 		this.plugin = plugin;
 	}
+
+	public abstract int[] getRegionIds();
 
 	public void onVarbitChanged(VarbitChanged event)
 	{

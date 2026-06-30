@@ -141,7 +141,7 @@ public class SoteTracker extends RoomTracker
 		plugin.sendChatMessage(messages);
 
 		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(SOTETSEG_IMAGE_ID, "Sotetseg", roomTime, percent, damage, splits, "");
-		plugin.addInfoBox(Boss.SOTETSEG,box);
+		plugin.addInfoBox(Boss.SOTETSEG, box);
 		reset();
 	}
 

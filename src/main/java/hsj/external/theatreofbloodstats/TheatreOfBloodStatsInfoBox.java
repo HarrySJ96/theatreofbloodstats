@@ -44,8 +44,8 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 	private final String damage;
 	private final String splits;
 	private final String healed;
-	private String tooltipText;
 	private final TheatreOfBloodStatsConfig config;
+	private String tooltipText;
 
 
 	TheatreOfBloodStatsInfoBox(
@@ -138,14 +138,14 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 	}
 
 	@Override
-	public String getTooltip()
-	{
-		return tooltipText;
-	}
-
-	@Override
 	public boolean render()
 	{
 		return config.showInfoBoxes();
+	}
+
+	@Override
+	public String getTooltip()
+	{
+		return tooltipText;
 	}
 }

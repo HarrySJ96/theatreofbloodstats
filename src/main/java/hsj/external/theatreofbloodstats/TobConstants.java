@@ -25,11 +25,11 @@
 package hsj.external.theatreofbloodstats;
 
 import com.google.common.collect.ImmutableSet;
+import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.regex.Pattern;
 import net.runelite.api.gameval.NpcID;
-import java.text.DecimalFormat;
-import java.util.Set;
 
 public final class TobConstants
 {
@@ -81,11 +81,6 @@ public final class TobConstants
 		packRegionCoords(46, 24), packRegionCoords(46, 25), packRegionCoords(47, 24), packRegionCoords(47, 25)
 	};
 
-	public static int packRegionCoords(int x, int y)
-	{
-		return (x << 16) | y;
-	}
-
 	static
 	{
 		Arrays.sort(NYLOCAS_IDS);
@@ -94,5 +89,10 @@ public final class TobConstants
 
 	private TobConstants()
 	{
+	}
+
+	public static int packRegionCoords(int x, int y)
+	{
+		return (x << 16) | y;
 	}
 }

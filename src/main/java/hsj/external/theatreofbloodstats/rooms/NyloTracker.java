@@ -32,8 +32,8 @@ import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_TOTAL_HEALING;
-import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_IMAGE_ID;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_IDS;
+import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_IMAGE_ID;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_VALID_SPAWNS;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVE;
@@ -94,7 +94,7 @@ public class NyloTracker extends RoomTracker
 			case NpcID.NYLOCAS_BOSS_MELEE:
 			case NpcID.NYLOCAS_BOSS_MELEE_STORY:
 			case NpcID.NYLOCAS_BOSS_MELEE_HARD:
-					bossNpc = event.getNpc();
+				bossNpc = event.getNpc();
 				break;
 		}
 

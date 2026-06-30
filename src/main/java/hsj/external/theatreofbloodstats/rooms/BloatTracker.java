@@ -64,6 +64,20 @@ public class BloatTracker extends RoomTracker
 	}
 
 	@Override
+	public void onVarbitChanged(VarbitChanged event)
+	{
+		if (startTick != -1)
+		{
+			return;
+		}
+
+		if (event.getVarbitId() == VarbitID.TOB_CLIENT_WAVEPROGRESS_TYPE && client.getVarbitValue(VarbitID.TOB_CLIENT_WAVEPROGRESS_TYPE) == 1)
+		{
+			startTick = client.getTickCount();
+		}
+	}
+
+	@Override
 	public void onGameTick(GameTick event)
 	{
 		if (bossNpc == null)
@@ -80,20 +94,6 @@ public class BloatTracker extends RoomTracker
 					}
 				}
 			}
-		}
-	}
-
-	@Override
-	public void onVarbitChanged(VarbitChanged event)
-	{
-		if (startTick != -1)
-		{
-			return;
-		}
-
-		if (event.getVarbitId() == VarbitID.TOB_CLIENT_WAVEPROGRESS_TYPE && client.getVarbitValue(VarbitID.TOB_CLIENT_WAVEPROGRESS_TYPE) == 1)
-		{
-			startTick = client.getTickCount();
 		}
 	}
 

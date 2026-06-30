@@ -38,6 +38,12 @@ public interface TheatreOfBloodStatsConfig extends Config
 		position = 0
 	)
 	String chatSettings = "chatSettings";
+	@ConfigSection(
+		name = "Info Boxes",
+		description = "Settings for the infoboxes",
+		position = 1
+	)
+	String infoBoxSettings = "infoBoxSettings";
 
 	@ConfigItem(
 		keyName = "chatboxDmg",
@@ -74,13 +80,6 @@ public interface TheatreOfBloodStatsConfig extends Config
 	{
 		return true;
 	}
-
-	@ConfigSection(
-		name = "Info Boxes",
-		description = "Settings for the infoboxes",
-		position = 1
-	)
-	String infoBoxSettings = "infoBoxSettings";
 
 	@ConfigItem(
 		keyName = "showInfoBoxes",
