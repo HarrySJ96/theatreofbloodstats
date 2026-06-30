@@ -80,18 +80,20 @@ public class BloatTracker extends RoomTracker
 	@Override
 	public void onGameTick(GameTick event)
 	{
-		if (bossNpc == null)
+		if (bossNpc != null)
 		{
-			WorldView worldview = client.getTopLevelWorldView();
-			if (worldview != null)
+			return;
+		}
+
+		WorldView worldview = client.getTopLevelWorldView();
+		if (worldview != null)
+		{
+			for (NPC npc : worldview.npcs())
 			{
-				for (NPC npc : worldview.npcs())
+				if (npc != null && Boss.BLOAT.getName().equals(npc.getName()))
 				{
-					if (npc != null && Boss.BLOAT.getName().equals(npc.getName()))
-					{
-						bossNpc = npc;
-						break;
-					}
+					bossNpc = npc;
+					break;
 				}
 			}
 		}
