@@ -88,7 +88,7 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	private ChatMessageManager chatMessageManager;
 
 	@Inject
-	public InfoBoxManager infoBoxManager;
+	private InfoBoxManager infoBoxManager;
 
 	@Inject
 	private ItemManager itemManager;
@@ -382,6 +382,7 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 			infoBoxManager.removeInfoBox(old);
 		}
 		infoBoxManager.addInfoBox(box);
+		infoBoxes.put(boss, box);
 	}
 
 	public String formatTime(int ticks)

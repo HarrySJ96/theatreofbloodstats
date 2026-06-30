@@ -165,7 +165,6 @@ public class NyloTracker extends RoomTracker
 
 		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(NYLOCAS_IMAGE_ID, "Nylocas", roomTime, percent, damage, splits, healing);
 		plugin.addInfoBox(Boss.NYLOCAS, box);
-		plugin.infoBoxes.put(Boss.NYLOCAS, box);
 		reset();
 	}
 

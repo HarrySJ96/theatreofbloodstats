@@ -129,7 +129,6 @@ public class XarpusTracker extends RoomTracker
 
 		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(XARPUS_IMAGE_ID, "Xarpus", roomTime, percent, damage, splits, healing);
 		plugin.addInfoBox(Boss.XARPUS, box);
-		plugin.infoBoxes.put(Boss.XARPUS, box);
 		reset();
 	}
 

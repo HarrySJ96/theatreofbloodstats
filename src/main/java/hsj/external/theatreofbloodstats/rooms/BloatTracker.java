@@ -133,7 +133,6 @@ public class BloatTracker extends RoomTracker
 
 		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(BLOAT_IMAGE_ID, "Bloat", roomTime, percent, damage, splits.toString(), "");
 		plugin.addInfoBox(Boss.BLOAT, box);
-		plugin.infoBoxes.put(Boss.BLOAT, box);
 		reset();
 	}
 
