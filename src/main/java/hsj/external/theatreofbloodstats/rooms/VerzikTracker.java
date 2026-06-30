@@ -22,11 +22,11 @@ public class VerzikTracker extends RoomTracker
 {
 	private int verzikP1time;
 	private int verzikP2time;
-	private double verzikP1personal;
-	private double verzikP1total;
-	private double verzikP2personal;
-	private double verzikP2total;
-	private double verzikP2healed;
+	private int verzikP1personal;
+	private int verzikP1total;
+	private int verzikP2personal;
+	private int verzikP2total;
+	private int verzikP2healed;
 
 	public VerzikTracker(Client client, TheatreOfBloodStatsPlugin plugin)
 	{
@@ -94,10 +94,10 @@ public class VerzikTracker extends RoomTracker
 		List<String> messages = new ArrayList<>();
 		double p3personal = personalDamage - (verzikP1personal + verzikP2personal);
 		double p3total = totalDamage - (verzikP1total + verzikP2total);
-		double p3healed = totalHealing - verzikP2healed;
+		int p3healed = totalHealing - verzikP2healed;
 
-		double p1percent = verzikP1total > 0 ? (verzikP1personal / verzikP1total) * 100 : 0;
-		double p2percent = verzikP2total > 0 ? (verzikP2personal / verzikP2total) * 100 : 0;
+		double p1percent = verzikP1total > 0 ? ((double) verzikP1personal / verzikP1total) * 100 : 0;
+		double p2percent = verzikP2total > 0 ? ((double) verzikP2personal / verzikP2total) * 100 : 0;
 		double p3percent = p3total > 0 ? (p3personal / p3total) * 100 : 0;
 		double percent = Math.round(totalDamage > 0 ? ((double) personalDamage / totalDamage) * 100 : 0);
 
@@ -143,8 +143,8 @@ public class VerzikTracker extends RoomTracker
 			plugin.buildDamageMessage(messages, "Total Personal Damage", personalDamage, totalDamage);
 		}
 
-		plugin.buildHealedMessage(messages, "P2 Healed", (int) verzikP2healed);
-		plugin.buildHealedMessage(messages, "P3 Healed", (int) p3healed);
+		plugin.buildHealedMessage(messages, "P2 Healed", verzikP2healed);
+		plugin.buildHealedMessage(messages, "P3 Healed", p3healed);
 		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
 		plugin.sendChatMessage(messages);
 
