@@ -107,17 +107,20 @@ public class BloatTracker extends RoomTracker
 		{
 			int roomTicks = client.getTickCount() - startTick;
 			roomTime = plugin.formatTime(roomTicks);
-			for (int i = 0; i < downTimes.size(); i++)
+			if (!downTimes.isEmpty())
 			{
-				if (i == 0)
+				for (int i = 0; i < downTimes.size(); i++)
 				{
-					splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append("</br>");
+					if (i == 0)
+					{
+						splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append("</br>");
+					}
+					else
+					{
+						splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append(" (").append(plugin.formatTime(downTimes.get(i) - downTimes.get(i - 1))).append(")</br>");
+					}
+					plugin.buildSplitMessage(messages, "Down " + (i + 1), downTimes.get(i), i == 0 ? 0 : downTimes.get(i - 1));
 				}
-				else
-				{
-					splits.append("Down ").append(i + 1).append(" - ").append(plugin.formatTime(downTimes.get(i))).append(" (").append(plugin.formatTime(downTimes.get(i) - downTimes.get(i - 1))).append(")</br>");
-				}
-				plugin.buildSplitMessage(messages, "Down " + (i + 1), downTimes.get(i), i == 0 ? 0 : downTimes.get(i - 1));
 			}
 
 			splits.append(MSG_ROOM_COMPLETE).append(" - ").append(roomTime).append(" (").append(plugin.formatTime(roomTicks - downTimes.get(downTimes.size() - 1))).append(")");
