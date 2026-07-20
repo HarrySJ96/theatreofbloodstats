@@ -26,19 +26,20 @@ package hsj.external.theatreofbloodstats;
 
 import com.google.common.collect.ImmutableSet;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.regex.Pattern;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.runelite.api.gameval.NpcID;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TobConstants
 {
-	public static final DecimalFormat DMG_FORMAT = new DecimalFormat("#,##0");
-	public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("##0.0");
 	public static final String MSG_PERSONAL_DAMAGE = "Personal Boss Damage";
 	public static final String MSG_TOTAL_HEALING = "Total Healing";
 	public static final String MSG_ROOM_COMPLETE = "Room Complete";
 	public static final String XARPUS_SCREECH = "Screeeeech!";
+	public static final String LINE_BREAK = "</br>";
 	public static final Pattern MAIDEN_WAVE = Pattern.compile("Wave 'The Maiden of Sugadinti' \\(.*\\) complete!");
 	public static final Pattern BLOAT_WAVE = Pattern.compile("Wave 'The Pestilent Bloat' \\(.*\\) complete!");
 	public static final Pattern NYLOCAS_WAVE = Pattern.compile("Wave 'The Nylocas' \\(.*\\) complete!");
@@ -57,13 +58,7 @@ public final class TobConstants
 	public static final Set<int[]> TOB_REGION_IDS = ImmutableSet.of(TOB_LOBBY_REGION_IDS, MAIDEN_REGION_IDS, BLOAT_REGION_IDS, NYLOCAS_REGION_IDS, SOTE_REGION_IDS, SOTETSEG_MAZE_REGION_IDS, XARPUS_REGION_IDS, VERZIK_REGION_IDS, THRONE_ROOM_REGION_IDS);
 	public static final int NYLOCAS_WAVES_TOTAL = 31;
 	public static final int TICK_LENGTH = 600;
-	public static final int MAIDEN_IMAGE_ID = 25748;
-	public static final int BLOAT_IMAGE_ID = 25749;
-	public static final int NYLOCAS_IMAGE_ID = 25750;
-	public static final int SOTETSEG_IMAGE_ID = 25751;
-	public static final int XARPUS_IMAGE_ID = 25752;
-	public static final int VERZIK_IMAGE_ID = 22473;
-	public static final int[] NYLOCAS_IDS = {
+	public static final Set<Integer> NYLOCAS_IDS = Set.of(
 		NpcID.TOB_NYLOCAS_INCOMING_MAGIC, NpcID.TOB_NYLOCAS_BIG_INCOMING_MAGIC, NpcID.TOB_NYLOCAS_FIGHTING_MAGIC, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MAGIC,
 		NpcID.TOB_NYLOCAS_INCOMING_MAGIC_STORY, NpcID.TOB_NYLOCAS_BIG_INCOMING_MAGIC_STORY, NpcID.TOB_NYLOCAS_FIGHTING_MAGIC_STORY, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MAGIC_STORY,
 		NpcID.TOB_NYLOCAS_INCOMING_MAGIC_HARD, NpcID.TOB_NYLOCAS_BIG_INCOMING_MAGIC_HARD, NpcID.TOB_NYLOCAS_FIGHTING_MAGIC_HARD, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MAGIC_HARD,
@@ -73,26 +68,27 @@ public final class TobConstants
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE, NpcID.TOB_NYLOCAS_FIGHTING_MELEE, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE,
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE_STORY, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE_STORY, NpcID.TOB_NYLOCAS_FIGHTING_MELEE_STORY, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE_STORY,
 		NpcID.TOB_NYLOCAS_INCOMING_MELEE_HARD, NpcID.TOB_NYLOCAS_BIG_INCOMING_MELEE_HARD, NpcID.TOB_NYLOCAS_FIGHTING_MELEE_HARD, NpcID.TOB_NYLOCAS_BIG_FIGHTING_MELEE_HARD
-	};
-
-	public static final int[] NYLOCAS_VALID_SPAWNS = {
+	);
+	public static final Set<Integer> NYLOCAS_VALID_SPAWNS = Set.of(
 		packRegionCoords(17, 24), packRegionCoords(17, 25), packRegionCoords(18, 24), packRegionCoords(18, 25),
 		packRegionCoords(31, 9), packRegionCoords(31, 10), packRegionCoords(32, 9), packRegionCoords(32, 10),
 		packRegionCoords(46, 24), packRegionCoords(46, 25), packRegionCoords(47, 24), packRegionCoords(47, 25)
-	};
-
-	static
-	{
-		Arrays.sort(NYLOCAS_IDS);
-		Arrays.sort(NYLOCAS_VALID_SPAWNS);
-	}
-
-	private TobConstants()
-	{
-	}
+	);
+	private static final DecimalFormat DMG_FORMAT = new DecimalFormat("#,##0");
+	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("##0.0");
 
 	public static int packRegionCoords(int x, int y)
 	{
 		return (x << 16) | y;
+	}
+
+	public static String formatDamage(double amount)
+	{
+		return DMG_FORMAT.format(amount);
+	}
+
+	public static String formatPercent(double percent)
+	{
+		return DECIMAL_FORMAT.format(percent);
 	}
 }

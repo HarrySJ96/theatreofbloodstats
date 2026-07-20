@@ -25,8 +25,10 @@
 package hsj.external.theatreofbloodstats;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public enum Boss
 {
 	MAIDEN("The Maiden of Sugadinti"),
@@ -37,9 +39,4 @@ public enum Boss
 	VERZIK("Verzik Vitur");
 
 	private final String name;
-
-	Boss(String name)
-	{
-		this.name = name;
-	}
 }

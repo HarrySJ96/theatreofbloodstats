@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026, Copyright (c) 2026, HSJ (https://github.com/HarrySJ96)
+ * Copyright (c) 2026, HSJ (https://github.com/HarrySJ96)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,10 +25,9 @@
 package hsj.external.theatreofbloodstats;
 
 import com.google.inject.Provides;
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
-import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
+import static hsj.external.theatreofbloodstats.TheatreOfBloodStatsConfig.CONFIG_GROUP;
+import static hsj.external.theatreofbloodstats.TobConstants.SOTETSEG_MAZE_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.THRONE_ROOM_REGION_IDS;
-import static hsj.external.theatreofbloodstats.TobConstants.TICK_LENGTH;
 import static hsj.external.theatreofbloodstats.TobConstants.TOB_LOBBY_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.TOB_REGION_IDS;
 import hsj.external.theatreofbloodstats.rooms.BloatTracker;
@@ -42,12 +41,12 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import net.runelite.api.Actor;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
@@ -58,11 +57,7 @@ import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.OverheadTextChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WorldViewLoaded;
-import net.runelite.api.gameval.VarbitID;
-import net.runelite.client.chat.ChatColorType;
-import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
-import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -78,19 +73,24 @@ import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 )
 public class TheatreOfBloodStatsPlugin extends Plugin
 {
-	public final Map<Boss, TheatreOfBloodStatsInfoBox> infoBoxes = new EnumMap<>(Boss.class);
+	static final String TEST_INFO_BOXES_PROPERTY = "theatreofbloodstats.testInfoBoxes";
+	private final Map<Boss, TheatreOfBloodStatsInfoBox> infoBoxes = new EnumMap<>(Boss.class);
+
 	@Inject
 	private Client client;
+
 	@Inject
 	private TheatreOfBloodStatsConfig config;
+
 	@Inject
 	private ChatMessageManager chatMessageManager;
+
 	@Inject
 	private InfoBoxManager infoBoxManager;
+
 	@Inject
 	private ItemManager itemManager;
-	@Inject
-	private ConfigManager configManager;
+
 	private RoomTracker roomTracker;
 	private List<RoomTracker> allTrackers;
 
@@ -103,13 +103,14 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		RoomStatsFormatter formatter = new RoomStatsFormatter(client, config, chatMessageManager);
 		allTrackers = List.of(
-			new MaidenTracker(client, this),
-			new BloatTracker(client, this),
-			new NyloTracker(client, this),
-			new SoteTracker(client, this),
-			new XarpusTracker(client, this),
-			new VerzikTracker(client, this)
+			new MaidenTracker(client, formatter, this),
+			new BloatTracker(client, formatter, this),
+			new NyloTracker(client, formatter, this),
+			new SoteTracker(client, formatter, this),
+			new XarpusTracker(client, formatter, this),
+			new VerzikTracker(client, formatter, this)
 		);
 	}
 
@@ -124,7 +125,7 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (!"theatreofbloodstats".equals(event.getGroup()) || infoBoxes.isEmpty())
+		if (!CONFIG_GROUP.equals(event.getGroup()) || infoBoxes.isEmpty())
 		{
 			return;
 		}
@@ -142,15 +143,22 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 				}
 				break;
 			}
+			default:
+				break;
 		}
 	}
 
 	@Subscribe
 	public void onWorldViewLoaded(WorldViewLoaded event)
 	{
-		int[] regions = event.getWorldView().getMapRegions();
+		if (allTrackers == null || Boolean.getBoolean(TEST_INFO_BOXES_PROPERTY))
+		{
+			return;
+		}
 
+		int[] regions = event.getWorldView().getMapRegions();
 		boolean isTobRegion = false;
+
 		for (int[] tobRegion : TOB_REGION_IDS)
 		{
 			if (Arrays.equals(tobRegion, regions))
@@ -172,6 +180,11 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 		if (Arrays.equals(TOB_LOBBY_REGION_IDS, regions) || Arrays.equals(THRONE_ROOM_REGION_IDS, regions))
 		{
 			resetAll();
+			return;
+		}
+
+		if (Arrays.equals(SOTETSEG_MAZE_REGION_IDS, regions))
+		{
 			return;
 		}
 
@@ -287,85 +300,10 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 		roomTracker.onChatMessage(event);
 	}
 
-	public void buildSplitMessage(List<String> messages, String phaseName, int currentPhaseTime, int previousPhaseTime)
-	{
-		if (!config.chatboxSplits())
-		{
-			return;
-		}
-
-		String timeString = formatTime(currentPhaseTime);
-		if (previousPhaseTime > 0)
-		{
-			timeString += " (" + formatTime(currentPhaseTime - previousPhaseTime) + ")";
-		}
-
-		messages.add(new ChatMessageBuilder()
-			.append(ChatColorType.NORMAL)
-			.append(phaseName)
-			.append(" - ")
-			.append(ChatColorType.HIGHLIGHT)
-			.append(timeString)
-			.build());
-	}
-
-	public void buildDamageMessage(List<String> messages, String prefix, double personal, double total)
-	{
-		if (!config.chatboxDmg() || personal <= 0)
-		{
-			return;
-		}
-
-		double percent = total > 0 ? (personal / total) * 100 : 0;
-		messages.add(new ChatMessageBuilder()
-			.append(ChatColorType.NORMAL)
-			.append(prefix)
-			.append(" - ")
-			.append(ChatColorType.HIGHLIGHT)
-			.append(DMG_FORMAT.format(personal))
-			.append(" (")
-			.append(DECIMAL_FORMAT.format(percent))
-			.append("%)")
-			.build());
-	}
-
-	public void buildHealedMessage(List<String> messages, String prefix, int healed)
-	{
-		if (!config.chatboxHealed() || healed <= 0)
-		{
-			return;
-		}
-
-		messages.add(new ChatMessageBuilder()
-			.append(ChatColorType.NORMAL)
-			.append(prefix)
-			.append(" - ")
-			.append(ChatColorType.HIGHLIGHT)
-			.append(DMG_FORMAT.format(healed))
-			.build());
-	}
-
-	public void sendChatMessage(List<String> messages)
-	{
-		if (messages.isEmpty())
-		{
-			return;
-		}
-
-		for (String m : messages)
-		{
-			chatMessageManager.queue(QueuedMessage.builder()
-				.type(ChatMessageType.GAMEMESSAGE)
-				.runeLiteFormattedMessage(m)
-				.build());
-		}
-
-	}
-
-	public TheatreOfBloodStatsInfoBox createInfoBox(int itemId, String room, String time, double percent, String damage, String splits, String healed)
+	public TheatreOfBloodStatsInfoBox createInfoBox(int itemId, String room, RoomResult result)
 	{
 		BufferedImage image = itemManager.getImage(itemId);
-		return new TheatreOfBloodStatsInfoBox(image, config, this, room, time, percent, damage, splits, healed);
+		return new TheatreOfBloodStatsInfoBox(image, config, this, room, result);
 	}
 
 	public void addInfoBox(Boss boss, TheatreOfBloodStatsInfoBox box)
@@ -377,33 +315,6 @@ public class TheatreOfBloodStatsPlugin extends Plugin
 		}
 		infoBoxManager.addInfoBox(box);
 		infoBoxes.put(boss, box);
-	}
-
-	public String formatTime(int ticks)
-	{
-		int millis = ticks * TICK_LENGTH;
-		long minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1);
-		long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1);
-		long hundredths = (millis % 1000) / 10;
-
-		if (client.getVarbitValue(VarbitID.OPTION_PRECISE_TIMING) == 1)
-		{
-			return String.format("%d:%02d.%02d", minutes, seconds, hundredths);
-		}
-		else
-		{
-			return String.format("%d:%02d", minutes, seconds);
-		}
-	}
-
-	public double percentOf(double personal, double total)
-	{
-		return total > 0 ? (personal / total) * 100 : 0;
-	}
-
-	public String buildSplitString(String... lines)
-	{
-		return String.join("</br>", lines);
 	}
 
 	private void resetAll()

@@ -25,26 +25,28 @@
 package hsj.external.theatreofbloodstats.rooms;
 
 import hsj.external.theatreofbloodstats.Boss;
+import hsj.external.theatreofbloodstats.RoomResult;
+import hsj.external.theatreofbloodstats.RoomStatsFormatter;
 import hsj.external.theatreofbloodstats.RoomTracker;
-import hsj.external.theatreofbloodstats.TheatreOfBloodStatsInfoBox;
+import hsj.external.theatreofbloodstats.Split;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
-import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
+import static hsj.external.theatreofbloodstats.TobConstants.LINE_BREAK;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_TOTAL_HEALING;
-import static hsj.external.theatreofbloodstats.TobConstants.XARPUS_IMAGE_ID;
 import static hsj.external.theatreofbloodstats.TobConstants.XARPUS_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.XARPUS_SCREECH;
 import static hsj.external.theatreofbloodstats.TobConstants.XARPUS_WAVE;
-import java.util.ArrayList;
+import static hsj.external.theatreofbloodstats.TobConstants.formatDamage;
+import static hsj.external.theatreofbloodstats.TobConstants.formatPercent;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import net.runelite.api.Client;
-import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.NpcChanged;
 import net.runelite.api.events.OverheadTextChanged;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.NpcID;
-import net.runelite.client.util.Text;
 
 public class XarpusTracker extends RoomTracker
 {
@@ -53,19 +55,95 @@ public class XarpusTracker extends RoomTracker
 	private int xarpusPreScreech;
 	private int xarpusPreScreechTotal;
 
-	public XarpusTracker(Client client, TheatreOfBloodStatsPlugin plugin)
+	public XarpusTracker(Client client, RoomStatsFormatter formatter, TheatreOfBloodStatsPlugin plugin)
 	{
-		super(client, plugin);
+		super(client, formatter, plugin);
 	}
 
 	@Override
-	public int[] getRegionIds()
+	protected int[] getRegionIds()
 	{
 		return XARPUS_REGION_IDS;
 	}
 
 	@Override
-	public void onNpcChanged(NpcChanged event)
+	protected Pattern getCompletionPattern()
+	{
+		return XARPUS_WAVE;
+	}
+
+	@Override
+	protected Boss getBoss()
+	{
+		return Boss.XARPUS;
+	}
+
+	@Override
+	protected int getImageId()
+	{
+		return ItemID.XARPUSPET;
+	}
+
+	@Override
+	protected RoomResult buildResult(List<String> messages)
+	{
+		int xarpusPostScreech = personalDamage - xarpusPreScreech;
+		double percent = formatter.percentOf(personalDamage, totalDamage);
+		double preScreechPercent = formatter.percentOf(xarpusPreScreech, xarpusPreScreechTotal);
+
+		int xarpusPostTotal = totalDamage - xarpusPreScreechTotal;
+		double postScreechPercent = formatter.percentOf(xarpusPostScreech, xarpusPostTotal);
+
+		String roomTime = "";
+		String splits = "";
+		String damage = "";
+		String healing = MSG_TOTAL_HEALING + " - " + formatDamage(totalHealing);
+
+		if (startTick > 0)
+		{
+			int roomTicks = client.getTickCount() - startTick;
+			roomTime = formatter.formatTime(roomTicks);
+
+			splits = buildSplitSummary(messages, Arrays.asList(
+				new Split("Recovery Phase", xarpusRecoveryTime),
+				new Split("Screech Time", xarpusAcidTime),
+				new Split(MSG_ROOM_COMPLETE, roomTicks)
+			));
+
+			formatter.buildSplitMessage(messages, "Recovery Phase", xarpusRecoveryTime, 0);
+			formatter.buildSplitMessage(messages, "Screech Time", xarpusAcidTime, xarpusRecoveryTime);
+			formatter.buildSplitMessage(messages, MSG_ROOM_COMPLETE, roomTicks, xarpusAcidTime);
+		}
+
+		if (xarpusPreScreech > 0)
+		{
+			damage += "Pre Screech Damage - " + formatDamage(xarpusPreScreech) + " (" + formatPercent(preScreechPercent) + "%)" + LINE_BREAK;
+			formatter.buildDamageMessage(messages, "Pre Screech Damage", xarpusPreScreech, xarpusPreScreechTotal);
+		}
+		if (xarpusPostScreech > 0)
+		{
+			damage += "Post Screech Damage - " + formatDamage(xarpusPostScreech) + " (" + formatPercent(postScreechPercent) + "%)" + LINE_BREAK;
+			formatter.buildDamageMessage(messages, "Post Screech Damage", xarpusPostScreech, xarpusPostTotal);
+		}
+		if (personalDamage > 0)
+		{
+			damage += MSG_PERSONAL_DAMAGE + " - " + formatDamage(personalDamage);
+			formatter.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
+		}
+
+		formatter.buildHealedMessage(messages, MSG_TOTAL_HEALING, totalHealing);
+
+		return RoomResult.builder()
+			.roomTime(roomTime)
+			.percent(percent)
+			.damage(damage)
+			.splits(splits)
+			.healing(healing)
+			.build();
+	}
+
+	@Override
+	protected void onNpcChanged(NpcChanged event)
 	{
 		int npcId = event.getNpc().getId();
 		switch (npcId)
@@ -81,92 +159,30 @@ public class XarpusTracker extends RoomTracker
 			case NpcID.TOB_XARPUS_COMBAT_HARD:
 				xarpusRecoveryTime = client.getTickCount() - startTick;
 				break;
+			default:
+				break;
 		}
 	}
 
 	@Override
-	public void onOverheadTextChanged(OverheadTextChanged event)
+	protected void onOverheadTextChanged(OverheadTextChanged event)
 	{
-		String overheadText = event.getOverheadText();
-		String npcName = event.getActor().getName();
-		if (npcName != null && npcName.equals(Boss.XARPUS.getName()) && overheadText.equals(XARPUS_SCREECH))
-		{
-			xarpusAcidTime = client.getTickCount() - startTick;
-			xarpusPreScreech = personalDamage;
-			xarpusPreScreechTotal = totalDamage;
-		}
-	}
-
-	@Override
-	public void onChatMessage(ChatMessage event)
-	{
-		if (!XARPUS_WAVE.matcher(Text.removeTags(event.getMessage())).find())
+		if (!Boss.XARPUS.getName().equals(event.getActor().getName()) && !XARPUS_SCREECH.equals(event.getOverheadText()))
 		{
 			return;
 		}
 
-		List<String> messages = new ArrayList<>();
-		double xarpusPostScreech = personalDamage - xarpusPreScreech;
-		double percent = plugin.percentOf(personalDamage, totalDamage);
-		double preScreechPercent = plugin.percentOf(xarpusPreScreech, xarpusPreScreechTotal);
-
-		double xarpusPostTotal = totalDamage - xarpusPreScreechTotal;
-		double postScreechPercent = xarpusPostTotal > 0 ? (xarpusPostScreech / xarpusPostTotal) * 100 : 0;
-
-		String roomTime = "";
-		String splits = "";
-		String damage = "";
-		String healing = MSG_TOTAL_HEALING + " - " + DMG_FORMAT.format(totalHealing);
-
-		if (startTick > 0)
-		{
-			int roomTicks = client.getTickCount() - startTick;
-			roomTime = plugin.formatTime(roomTicks);
-
-			splits = plugin.buildSplitString("Recovery Phase - " + plugin.formatTime(xarpusRecoveryTime),
-				"Screech Time - " + plugin.formatTime(xarpusAcidTime) + " (" + plugin.formatTime(xarpusAcidTime - xarpusRecoveryTime) + ")",
-				MSG_ROOM_COMPLETE + " - " + roomTime + " (" + plugin.formatTime(roomTicks - xarpusAcidTime) + ")");
-
-			plugin.buildSplitMessage(messages, "Recovery Phase", xarpusRecoveryTime, 0);
-			plugin.buildSplitMessage(messages, "Screech Time", xarpusAcidTime, xarpusRecoveryTime);
-			plugin.buildSplitMessage(messages, MSG_ROOM_COMPLETE, roomTicks, xarpusAcidTime);
-		}
-
-		if (xarpusPreScreech > 0)
-		{
-			damage += "Pre Screech Damage - " + DMG_FORMAT.format(xarpusPreScreech) + " (" + DECIMAL_FORMAT.format(preScreechPercent) + "%)</br>";
-			plugin.buildDamageMessage(messages, "Pre Screech Damage", xarpusPreScreech, xarpusPreScreechTotal);
-		}
-		if (xarpusPostScreech > 0)
-		{
-			damage += "Post Screech Damage - " + DMG_FORMAT.format(xarpusPostScreech) + " (" + DECIMAL_FORMAT.format(postScreechPercent) + "%)</br>";
-			plugin.buildDamageMessage(messages, "Post Screech Damage", xarpusPostScreech, xarpusPostTotal);
-		}
-		if (personalDamage > 0)
-		{
-			damage += MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage);
-			plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
-		}
-
-		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
-		plugin.sendChatMessage(messages);
-
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(XARPUS_IMAGE_ID, "Xarpus", roomTime, percent, damage, splits, healing);
-		plugin.addInfoBox(Boss.XARPUS, box);
-		reset();
+		xarpusAcidTime = client.getTickCount() - startTick;
+		xarpusPreScreech = personalDamage;
+		xarpusPreScreechTotal = totalDamage;
 	}
 
 	@Override
-	public void reset()
+	protected void resetRoomState()
 	{
-		startTick = -1;
 		xarpusRecoveryTime = 0;
 		xarpusAcidTime = 0;
 		xarpusPreScreech = 0;
 		xarpusPreScreechTotal = 0;
-		personalDamage = 0;
-		totalDamage = 0;
-		totalHealing = 0;
-		bossNpc = null;
 	}
 }

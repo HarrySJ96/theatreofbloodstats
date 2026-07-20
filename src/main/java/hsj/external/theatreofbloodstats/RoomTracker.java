@@ -24,6 +24,13 @@
  */
 package hsj.external.theatreofbloodstats;
 
+import static hsj.external.theatreofbloodstats.TobConstants.LINE_BREAK;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.runelite.api.Client;
 import net.runelite.api.Hitsplat;
 import net.runelite.api.HitsplatID;
@@ -37,11 +44,16 @@ import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.OverheadTextChanged;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.client.util.Text;
 
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class RoomTracker
 {
 	protected final Client client;
+	protected final RoomStatsFormatter formatter;
 	protected final TheatreOfBloodStatsPlugin plugin;
+	@Getter(AccessLevel.PROTECTED)
+	private final String roomName = getBoss().getName();
 
 	protected int personalDamage = 0;
 	protected int totalDamage = 0;
@@ -49,35 +61,37 @@ public abstract class RoomTracker
 	protected int startTick = -1;
 	protected NPC bossNpc = null;
 
-	public RoomTracker(Client client, TheatreOfBloodStatsPlugin plugin)
-	{
-		this.client = client;
-		this.plugin = plugin;
-	}
+	protected abstract int[] getRegionIds();
 
-	public abstract int[] getRegionIds();
+	protected abstract Pattern getCompletionPattern();
 
-	public void onVarbitChanged(VarbitChanged event)
-	{
-	}
+	protected abstract Boss getBoss();
 
-	public void onNpcSpawned(NpcSpawned event)
+	protected abstract int getImageId();
+
+	protected abstract RoomResult buildResult(List<String> messages);
+
+	protected void onVarbitChanged(VarbitChanged event)
 	{
 	}
 
-	public void onNpcChanged(NpcChanged event)
+	protected void onNpcSpawned(NpcSpawned event)
 	{
 	}
 
-	public void onNpcDespawned(NpcDespawned event)
+	protected void onNpcChanged(NpcChanged event)
 	{
 	}
 
-	public void onGameTick(GameTick event)
+	protected void onNpcDespawned(NpcDespawned event)
 	{
 	}
 
-	public void onHitsplatApplied(HitsplatApplied event)
+	protected void onGameTick(GameTick event)
+	{
+	}
+
+	protected void onHitsplatApplied(HitsplatApplied event)
 	{
 		if (bossNpc == null || event.getActor() != bossNpc)
 		{
@@ -102,17 +116,77 @@ public abstract class RoomTracker
 		}
 	}
 
-	public void onOverheadTextChanged(OverheadTextChanged event)
+	protected void onOverheadTextChanged(OverheadTextChanged event)
 	{
 	}
 
-	public void onAnimationChanged(AnimationChanged event)
+	protected void onAnimationChanged(AnimationChanged event)
 	{
 	}
 
-	public void onChatMessage(ChatMessage event)
+	protected final void onChatMessage(ChatMessage event)
 	{
+		if (!getCompletionPattern().matcher(Text.removeTags(event.getMessage())).find())
+		{
+			return;
+		}
+
+		List<String> messages = new ArrayList<>();
+		RoomResult result = buildResult(messages);
+
+		formatter.sendChatMessage(messages);
+
+		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(getImageId(), getRoomName(), result);
+		plugin.addInfoBox(getBoss(), box);
+		reset();
 	}
 
-	public abstract void reset();
+	protected final String buildSplitSummary(List<String> messages, List<Split> splits)
+	{
+		StringBuilder sb = new StringBuilder();
+		int previousTime = 0;
+
+		for (int i = 0; i < splits.size(); i++)
+		{
+			Split split = splits.get(i);
+
+			sb.append(split.getLabel())
+				.append(" - ")
+				.append(formatter.formatTime(split.getTick()));
+
+			if (i > 0)
+			{
+				sb.append(" (")
+					.append(formatter.formatTime(split.getTick() - previousTime))
+					.append(")");
+			}
+
+			if (i < splits.size() - 1)
+			{
+				sb.append(LINE_BREAK);
+			}
+
+			formatter.buildSplitMessage(messages, split.getLabel(), split.getTick(), previousTime);
+			previousTime = split.getTick();
+		}
+
+		return sb.toString();
+	}
+
+	protected void resetBaseState()
+	{
+		startTick = -1;
+		personalDamage = 0;
+		totalDamage = 0;
+		totalHealing = 0;
+		bossNpc = null;
+	}
+
+	protected abstract void resetRoomState();
+
+	protected final void reset()
+	{
+		resetBaseState();
+		resetRoomState();
+	}
 }

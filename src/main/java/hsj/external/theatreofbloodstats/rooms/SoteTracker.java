@@ -25,23 +25,24 @@
 package hsj.external.theatreofbloodstats.rooms;
 
 import hsj.external.theatreofbloodstats.Boss;
+import hsj.external.theatreofbloodstats.RoomResult;
+import hsj.external.theatreofbloodstats.RoomStatsFormatter;
 import hsj.external.theatreofbloodstats.RoomTracker;
-import hsj.external.theatreofbloodstats.TheatreOfBloodStatsInfoBox;
+import hsj.external.theatreofbloodstats.Split;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
-import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
-import static hsj.external.theatreofbloodstats.TobConstants.SOTETSEG_IMAGE_ID;
 import static hsj.external.theatreofbloodstats.TobConstants.SOTETSEG_WAVE;
 import static hsj.external.theatreofbloodstats.TobConstants.SOTE_REGION_IDS;
-import java.util.ArrayList;
+import static hsj.external.theatreofbloodstats.TobConstants.formatDamage;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import net.runelite.api.Client;
-import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.NpcChanged;
 import net.runelite.api.events.NpcSpawned;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.NpcID;
-import net.runelite.client.util.Text;
 
 public class SoteTracker extends RoomTracker
 {
@@ -50,19 +51,72 @@ public class SoteTracker extends RoomTracker
 	private boolean sote33;
 	private int sote33time;
 
-	public SoteTracker(Client client, TheatreOfBloodStatsPlugin plugin)
+	public SoteTracker(Client client, RoomStatsFormatter formatter, TheatreOfBloodStatsPlugin plugin)
 	{
-		super(client, plugin);
+		super(client, formatter, plugin);
 	}
 
 	@Override
-	public int[] getRegionIds()
+	protected int[] getRegionIds()
 	{
 		return SOTE_REGION_IDS;
 	}
 
 	@Override
-	public void onNpcSpawned(NpcSpawned event)
+	protected Pattern getCompletionPattern()
+	{
+		return SOTETSEG_WAVE;
+	}
+
+	@Override
+	protected Boss getBoss()
+	{
+		return Boss.SOTETSEG;
+	}
+
+	@Override
+	protected int getImageId()
+	{
+		return ItemID.SOTETSEGPET;
+	}
+
+	@Override
+	protected RoomResult buildResult(List<String> messages)
+	{
+		double percent = formatter.percentOf(personalDamage, totalDamage);
+		String roomTime = "";
+		String splits = "";
+		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + formatDamage(personalDamage) : "";
+
+		if (startTick > 0)
+		{
+			int roomTicks = client.getTickCount() - startTick;
+			roomTime = formatter.formatTime(roomTicks);
+
+			splits = buildSplitSummary(messages, Arrays.asList(
+				new Split("66%", sote66time),
+				new Split("33%", sote33time),
+				new Split(MSG_ROOM_COMPLETE, roomTicks)
+			));
+
+			formatter.buildSplitMessage(messages, "66%", sote66time, 0);
+			formatter.buildSplitMessage(messages, "33%", sote33time, sote66time);
+			formatter.buildSplitMessage(messages, MSG_ROOM_COMPLETE, roomTicks, sote33time);
+		}
+
+		formatter.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
+
+		return RoomResult.builder()
+			.roomTime(roomTime)
+			.percent(percent)
+			.damage(damage)
+			.splits(splits)
+			.healing("")
+			.build();
+	}
+
+	@Override
+	protected void onNpcSpawned(NpcSpawned event)
 	{
 		switch (event.getNpc().getId())
 		{
@@ -71,11 +125,13 @@ public class SoteTracker extends RoomTracker
 			case NpcID.TOB_SOTETSEG_COMBAT_HARD:
 				bossNpc = event.getNpc();
 				break;
+			default:
+				break;
 		}
 	}
 
 	@Override
-	public void onNpcChanged(NpcChanged event)
+	protected void onNpcChanged(NpcChanged event)
 	{
 		int npcId = event.getNpc().getId();
 		switch (npcId)
@@ -106,55 +162,17 @@ public class SoteTracker extends RoomTracker
 					}
 				}
 				break;
+			default:
+				break;
 		}
 	}
 
 	@Override
-	public void onChatMessage(ChatMessage event)
+	protected void resetRoomState()
 	{
-		if (!SOTETSEG_WAVE.matcher(Text.removeTags(event.getMessage())).find())
-		{
-			return;
-		}
-
-		List<String> messages = new ArrayList<>();
-		double percent = plugin.percentOf(personalDamage, totalDamage);
-		String roomTime = "";
-		String splits = "";
-		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";
-
-		if (startTick > 0)
-		{
-			int roomTicks = client.getTickCount() - startTick;
-			roomTime = plugin.formatTime(roomTicks);
-
-			splits = plugin.buildSplitString("66% - " + plugin.formatTime(sote66time),
-				"33% - " + plugin.formatTime(sote33time) + " (" + plugin.formatTime(sote33time - sote66time) + ")",
-				MSG_ROOM_COMPLETE + " - " + roomTime + " (" + plugin.formatTime(roomTicks - sote33time) + ")");
-
-			plugin.buildSplitMessage(messages, "66%", sote66time, 0);
-			plugin.buildSplitMessage(messages, "33%", sote33time, sote66time);
-			plugin.buildSplitMessage(messages, MSG_ROOM_COMPLETE, roomTicks, sote33time);
-		}
-
-		plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
-		plugin.sendChatMessage(messages);
-
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(SOTETSEG_IMAGE_ID, "Sotetseg", roomTime, percent, damage, splits, "");
-		plugin.addInfoBox(Boss.SOTETSEG, box);
-		reset();
-	}
-
-	@Override
-	public void reset()
-	{
-		startTick = -1;
 		sote66 = false;
 		sote66time = 0;
 		sote33 = false;
 		sote33time = 0;
-		personalDamage = 0;
-		totalDamage = 0;
-		bossNpc = null;
 	}
 }

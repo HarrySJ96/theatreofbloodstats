@@ -25,32 +25,32 @@
 package hsj.external.theatreofbloodstats.rooms;
 
 import hsj.external.theatreofbloodstats.Boss;
+import hsj.external.theatreofbloodstats.RoomResult;
+import hsj.external.theatreofbloodstats.RoomStatsFormatter;
 import hsj.external.theatreofbloodstats.RoomTracker;
-import hsj.external.theatreofbloodstats.TheatreOfBloodStatsInfoBox;
+import hsj.external.theatreofbloodstats.Split;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
-import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_PERSONAL_DAMAGE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_ROOM_COMPLETE;
 import static hsj.external.theatreofbloodstats.TobConstants.MSG_TOTAL_HEALING;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_IDS;
-import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_IMAGE_ID;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_VALID_SPAWNS;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVE;
 import static hsj.external.theatreofbloodstats.TobConstants.NYLOCAS_WAVES_TOTAL;
+import static hsj.external.theatreofbloodstats.TobConstants.formatDamage;
 import static hsj.external.theatreofbloodstats.TobConstants.packRegionCoords;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.NpcID;
-import net.runelite.client.util.Text;
 
 public class NyloTracker extends RoomTracker
 {
@@ -63,19 +63,76 @@ public class NyloTracker extends RoomTracker
 	private int bossSpawnTime;
 	private int nyloWave = 0;
 
-	public NyloTracker(Client client, TheatreOfBloodStatsPlugin plugin)
+	public NyloTracker(Client client, RoomStatsFormatter formatter, TheatreOfBloodStatsPlugin plugin)
 	{
-		super(client, plugin);
+		super(client, formatter, plugin);
 	}
 
 	@Override
-	public int[] getRegionIds()
+	protected int[] getRegionIds()
 	{
 		return NYLOCAS_REGION_IDS;
 	}
 
 	@Override
-	public void onNpcSpawned(NpcSpawned event)
+	protected Pattern getCompletionPattern()
+	{
+		return NYLOCAS_WAVE;
+	}
+
+	@Override
+	protected Boss getBoss()
+	{
+		return Boss.NYLOCAS;
+	}
+
+	@Override
+	protected int getImageId()
+	{
+		return ItemID.NYLOCASPET;
+	}
+
+	@Override
+	protected RoomResult buildResult(List<String> messages)
+	{
+		double percent = formatter.percentOf(personalDamage, totalDamage);
+		String roomTime = "";
+		String splits = "";
+		String healing = MSG_TOTAL_HEALING + " - " + formatDamage(totalHealing);
+		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + formatDamage(personalDamage) : "";
+
+		if (startTick > 0)
+		{
+			int roomTicks = client.getTickCount() - startTick;
+			roomTime = formatter.formatTime(roomTicks);
+
+			splits = buildSplitSummary(messages, Arrays.asList(
+				new Split("Waves", waveTime),
+				new Split("Cleanup", cleanupTime),
+				new Split("Boss Spawn", bossSpawnTime),
+				new Split(MSG_ROOM_COMPLETE, roomTicks)
+			));
+
+			formatter.buildSplitMessage(messages, "Waves", waveTime, 0);
+			formatter.buildSplitMessage(messages, "Cleanup", cleanupTime, waveTime);
+			formatter.buildSplitMessage(messages, "Boss Spawn", bossSpawnTime, cleanupTime);
+			formatter.buildSplitMessage(messages, MSG_ROOM_COMPLETE, roomTicks, bossSpawnTime);
+		}
+
+		formatter.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
+		formatter.buildHealedMessage(messages, MSG_TOTAL_HEALING, totalHealing);
+
+		return RoomResult.builder()
+			.roomTime(roomTime)
+			.percent(percent)
+			.damage(damage)
+			.splits(splits)
+			.healing(healing)
+			.build();
+	}
+
+	@Override
+	protected void onNpcSpawned(NpcSpawned event)
 	{
 		NPC npc = event.getNpc();
 		int npcId = npc.getId();
@@ -96,9 +153,11 @@ public class NyloTracker extends RoomTracker
 			case NpcID.NYLOCAS_BOSS_MELEE_HARD:
 				bossNpc = event.getNpc();
 				break;
+			default:
+				break;
 		}
 
-		if (Arrays.binarySearch(NYLOCAS_IDS, npcId) < 0)
+		if (!NYLOCAS_IDS.contains(npcId))
 		{
 			return;
 		}
@@ -107,7 +166,7 @@ public class NyloTracker extends RoomTracker
 		WorldPoint worldPoint = WorldPoint.fromLocalInstance(client, npc.getLocalLocation());
 		int packedLoc = packRegionCoords(worldPoint.getRegionX(), worldPoint.getRegionY());
 
-		if (Arrays.binarySearch(NYLOCAS_VALID_SPAWNS, packedLoc) < 0)
+		if (!NYLOCAS_VALID_SPAWNS.contains(packedLoc))
 		{
 			return;
 		}
@@ -126,10 +185,10 @@ public class NyloTracker extends RoomTracker
 	}
 
 	@Override
-	public void onNpcDespawned(NpcDespawned event)
+	protected void onNpcDespawned(NpcDespawned event)
 	{
 		int npcId = event.getNpc().getId();
-		if (Arrays.binarySearch(NYLOCAS_IDS, npcId) < 0)
+		if (!NYLOCAS_IDS.contains(npcId))
 		{
 			return;
 		}
@@ -144,7 +203,7 @@ public class NyloTracker extends RoomTracker
 	}
 
 	@Override
-	public void onGameTick(GameTick event)
+	protected void onGameTick(GameTick event)
 	{
 		if (waveThisTick)
 		{
@@ -153,49 +212,8 @@ public class NyloTracker extends RoomTracker
 	}
 
 	@Override
-	public void onChatMessage(ChatMessage event)
+	protected void resetRoomState()
 	{
-		if (!NYLOCAS_WAVE.matcher(Text.removeTags(event.getMessage())).find())
-		{
-			return;
-		}
-
-		List<String> messages = new ArrayList<>();
-		double percent = plugin.percentOf(personalDamage, totalDamage);
-		String roomTime = "";
-		String splits = "";
-		String healing = MSG_TOTAL_HEALING + " - " + DMG_FORMAT.format(totalHealing);
-		String damage = (personalDamage > 0) ? MSG_PERSONAL_DAMAGE + " - " + DMG_FORMAT.format(personalDamage) : "";
-
-		if (startTick > 0)
-		{
-			int roomTicks = client.getTickCount() - startTick;
-			roomTime = plugin.formatTime(roomTicks);
-
-			splits = plugin.buildSplitString("Waves - " + plugin.formatTime(waveTime),
-				"Cleanup - " + plugin.formatTime(cleanupTime) + " (" + plugin.formatTime(cleanupTime - waveTime) + ")",
-				"Boss Spawn - " + plugin.formatTime(bossSpawnTime) + " (" + plugin.formatTime(bossSpawnTime - cleanupTime) + ")",
-				MSG_ROOM_COMPLETE + " - " + roomTime + " (" + plugin.formatTime(roomTicks - bossSpawnTime) + ")");
-
-			plugin.buildSplitMessage(messages, "Waves", waveTime, 0);
-			plugin.buildSplitMessage(messages, "Cleanup", cleanupTime, waveTime);
-			plugin.buildSplitMessage(messages, "Boss Spawn", bossSpawnTime, cleanupTime);
-			plugin.buildSplitMessage(messages, MSG_ROOM_COMPLETE, roomTicks, bossSpawnTime);
-		}
-
-		plugin.buildDamageMessage(messages, MSG_PERSONAL_DAMAGE, personalDamage, totalDamage);
-		plugin.buildHealedMessage(messages, MSG_TOTAL_HEALING, totalHealing);
-		plugin.sendChatMessage(messages);
-
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(NYLOCAS_IMAGE_ID, "Nylocas", roomTime, percent, damage, splits, healing);
-		plugin.addInfoBox(Boss.NYLOCAS, box);
-		reset();
-	}
-
-	@Override
-	public void reset()
-	{
-		startTick = -1;
 		currentNylos = 0;
 		nyloWavesFinished = false;
 		nyloCleanupFinished = false;
@@ -204,8 +222,5 @@ public class NyloTracker extends RoomTracker
 		bossSpawnTime = 0;
 		waveThisTick = false;
 		nyloWave = 0;
-		personalDamage = 0;
-		totalDamage = 0;
-		bossNpc = null;
 	}
 }

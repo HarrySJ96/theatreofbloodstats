@@ -25,22 +25,24 @@
 package hsj.external.theatreofbloodstats.rooms;
 
 import hsj.external.theatreofbloodstats.Boss;
+import hsj.external.theatreofbloodstats.RoomResult;
+import hsj.external.theatreofbloodstats.RoomStatsFormatter;
 import hsj.external.theatreofbloodstats.RoomTracker;
-import hsj.external.theatreofbloodstats.TheatreOfBloodStatsInfoBox;
+import hsj.external.theatreofbloodstats.Split;
 import hsj.external.theatreofbloodstats.TheatreOfBloodStatsPlugin;
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
-import static hsj.external.theatreofbloodstats.TobConstants.DMG_FORMAT;
-import static hsj.external.theatreofbloodstats.TobConstants.VERZIK_IMAGE_ID;
+import static hsj.external.theatreofbloodstats.TobConstants.LINE_BREAK;
 import static hsj.external.theatreofbloodstats.TobConstants.VERZIK_REGION_IDS;
 import static hsj.external.theatreofbloodstats.TobConstants.VERZIK_WAVE;
-import java.util.ArrayList;
+import static hsj.external.theatreofbloodstats.TobConstants.formatDamage;
+import static hsj.external.theatreofbloodstats.TobConstants.formatPercent;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import net.runelite.api.Client;
-import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.NpcChanged;
 import net.runelite.api.events.NpcSpawned;
+import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.NpcID;
-import net.runelite.client.util.Text;
 
 public class VerzikTracker extends RoomTracker
 {
@@ -52,19 +54,97 @@ public class VerzikTracker extends RoomTracker
 	private int verzikP2total;
 	private int verzikP2healed;
 
-	public VerzikTracker(Client client, TheatreOfBloodStatsPlugin plugin)
+	public VerzikTracker(Client client, RoomStatsFormatter formatter, TheatreOfBloodStatsPlugin plugin)
 	{
-		super(client, plugin);
+		super(client, formatter, plugin);
 	}
 
 	@Override
-	public int[] getRegionIds()
+	protected int[] getRegionIds()
 	{
 		return VERZIK_REGION_IDS;
 	}
 
 	@Override
-	public void onNpcSpawned(NpcSpawned event)
+	protected Pattern getCompletionPattern()
+	{
+		return VERZIK_WAVE;
+	}
+
+	@Override
+	protected Boss getBoss()
+	{
+		return Boss.VERZIK;
+	}
+
+	@Override
+	protected int getImageId()
+	{
+		return ItemID.VERZIKPET;
+	}
+
+	@Override
+	protected RoomResult buildResult(List<String> messages)
+	{
+		int p3personal = personalDamage - (verzikP1personal + verzikP2personal);
+		int p3total = totalDamage - (verzikP1total + verzikP2total);
+		int p3healed = totalHealing - verzikP2healed;
+
+		double percent = formatter.percentOf(personalDamage, totalDamage);
+
+		String roomTime = "";
+		String splits = "";
+
+		String healing = formatter.buildSplitString(
+			"P2 Healed - " + formatDamage(verzikP2healed),
+			"P3 Healed - " + formatDamage(p3healed),
+			"Total Healed - " + formatDamage(totalHealing)
+		);
+
+		if (startTick > 0)
+		{
+			int roomTicks = client.getTickCount() - startTick;
+			roomTime = formatter.formatTime(roomTicks);
+
+			splits = buildSplitSummary(messages, Arrays.asList(
+				new Split("P1", verzikP1time),
+				new Split("P2", verzikP2time),
+				new Split("P3", roomTicks)
+			));
+
+			formatter.buildSplitMessage(messages, "P1", verzikP1time, 0);
+			formatter.buildSplitMessage(messages, "P2", verzikP2time, verzikP1time);
+			formatter.buildSplitMessage(messages, "P3", roomTicks, verzikP2time);
+		}
+
+		StringBuilder damageBuilder = new StringBuilder();
+
+		appendPhaseDamage(damageBuilder, messages, "P1", verzikP1personal, verzikP1total);
+		appendPhaseDamage(damageBuilder, messages, "P2", verzikP2personal, verzikP2total);
+		appendPhaseDamage(damageBuilder, messages, "P3", p3personal, p3total);
+
+		if (personalDamage > 0)
+		{
+			damageBuilder.append("Total Personal Damage - ").append(formatDamage(personalDamage)).append(" (")
+				.append(formatPercent(formatter.percentOf(personalDamage, totalDamage))).append("%)");
+			formatter.buildDamageMessage(messages, "Total Personal Damage", personalDamage, totalDamage);
+		}
+
+		formatter.buildHealedMessage(messages, "P2 Healed", verzikP2healed);
+		formatter.buildHealedMessage(messages, "P3 Healed", p3healed);
+		formatter.buildHealedMessage(messages, "Total Healed", totalHealing);
+
+		return RoomResult.builder()
+			.roomTime(roomTime)
+			.percent(percent)
+			.damage(damageBuilder.toString())
+			.splits(splits)
+			.healing(healing)
+			.build();
+	}
+
+	@Override
+	protected void onNpcSpawned(NpcSpawned event)
 	{
 		switch (event.getNpc().getId())
 		{
@@ -90,11 +170,13 @@ public class VerzikTracker extends RoomTracker
 			case NpcID.VERZIK_PHASE3_HARD:
 				bossNpc = event.getNpc();
 				break;
+			default:
+				break;
 		}
 	}
 
 	@Override
-	public void onNpcChanged(NpcChanged event)
+	protected void onNpcChanged(NpcChanged event)
 	{
 		switch (event.getNpc().getId())
 		{
@@ -104,83 +186,14 @@ public class VerzikTracker extends RoomTracker
 				bossNpc = event.getNpc();
 				startTick = client.getTickCount();
 				break;
+			default:
+				break;
 		}
 	}
 
 	@Override
-	public void onChatMessage(ChatMessage event)
+	protected void resetRoomState()
 	{
-		if (!VERZIK_WAVE.matcher(Text.removeTags(event.getMessage())).find())
-		{
-			return;
-		}
-
-		List<String> messages = new ArrayList<>();
-		double p3personal = personalDamage - (verzikP1personal + verzikP2personal);
-		double p3total = totalDamage - (verzikP1total + verzikP2total);
-		int p3healed = totalHealing - verzikP2healed;
-
-		double p1percent = plugin.percentOf(verzikP1personal, verzikP1total);
-		double p2percent = plugin.percentOf(verzikP2personal, verzikP2total);
-		double p3percent = plugin.percentOf(p3personal, p3total);
-		double percent = plugin.percentOf(personalDamage, totalDamage);
-
-		String roomTime = "";
-		String splits = "";
-		String damage = "";
-		String healing = plugin.buildSplitString("P2 Healed - " + DMG_FORMAT.format(verzikP2healed),
-			"P3 Healed - " + DMG_FORMAT.format(p3healed),
-			"Total Healed - " + DMG_FORMAT.format(totalHealing));
-
-		if (startTick > 0)
-		{
-			int roomTicks = client.getTickCount() - startTick;
-			roomTime = plugin.formatTime(roomTicks);
-
-			splits = plugin.buildSplitString("P1 - " + plugin.formatTime(verzikP1time),
-				"P2 - " + plugin.formatTime(verzikP2time) + " (" + plugin.formatTime(verzikP2time - verzikP1time) + ")",
-				"P3 - " + roomTime + " (" + plugin.formatTime(roomTicks - verzikP2time) + ")");
-
-			plugin.buildSplitMessage(messages, "P1", verzikP1time, 0);
-			plugin.buildSplitMessage(messages, "P2", verzikP2time, verzikP1time);
-			plugin.buildSplitMessage(messages, "P3", roomTicks, verzikP2time);
-		}
-
-		if (verzikP1personal > 0)
-		{
-			damage += "P1 Personal Damage - " + DMG_FORMAT.format(verzikP1personal) + " (" + DECIMAL_FORMAT.format(p1percent) + "%)</br>";
-			plugin.buildDamageMessage(messages, "P1 Personal Damage", verzikP1personal, verzikP1total);
-		}
-		if (verzikP2personal > 0)
-		{
-			damage += "P2 Personal Damage - " + DMG_FORMAT.format(verzikP2personal) + " (" + DECIMAL_FORMAT.format(p2percent) + "%)</br>";
-			plugin.buildDamageMessage(messages, "P2 Personal Damage", verzikP2personal, verzikP2total);
-		}
-		if (p3personal > 0)
-		{
-			damage += "P3 Personal Damage - " + DMG_FORMAT.format(p3personal) + " (" + DECIMAL_FORMAT.format(p3percent) + "%)</br>";
-			plugin.buildDamageMessage(messages, "P3 Personal Damage", p3personal, p3total);
-		}
-		if (personalDamage > 0)
-		{
-			damage += "Total Personal Damage - " + DMG_FORMAT.format(personalDamage);
-			plugin.buildDamageMessage(messages, "Total Personal Damage", personalDamage, totalDamage);
-		}
-
-		plugin.buildHealedMessage(messages, "P2 Healed", verzikP2healed);
-		plugin.buildHealedMessage(messages, "P3 Healed", p3healed);
-		plugin.buildHealedMessage(messages, "Total Healed", totalHealing);
-		plugin.sendChatMessage(messages);
-
-		TheatreOfBloodStatsInfoBox box = plugin.createInfoBox(VERZIK_IMAGE_ID, "Verzik", roomTime, percent, damage, splits, healing);
-		plugin.addInfoBox(Boss.VERZIK, box);
-		reset();
-	}
-
-	@Override
-	public void reset()
-	{
-		startTick = -1;
 		verzikP1time = 0;
 		verzikP2time = 0;
 		verzikP1personal = 0;
@@ -188,9 +201,19 @@ public class VerzikTracker extends RoomTracker
 		verzikP2personal = 0;
 		verzikP2total = 0;
 		verzikP2healed = 0;
-		personalDamage = 0;
-		totalDamage = 0;
-		totalHealing = 0;
-		bossNpc = null;
+	}
+
+	private void appendPhaseDamage(StringBuilder sb, List<String> messages, String phase, int personal, int total)
+	{
+		if (personal > 0)
+		{
+			double phasePercent = formatter.percentOf(personal, total);
+			String label = phase + " Personal Damage";
+
+			sb.append(label).append(" - ").append(formatDamage(personal))
+				.append(" (").append(formatPercent(phasePercent)).append("%)").append(LINE_BREAK);
+
+			formatter.buildDamageMessage(messages, label, personal, total);
+		}
 	}
 }

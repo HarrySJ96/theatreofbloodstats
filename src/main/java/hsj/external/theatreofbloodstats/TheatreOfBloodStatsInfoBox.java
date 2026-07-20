@@ -24,21 +24,19 @@
  */
 package hsj.external.theatreofbloodstats;
 
-import static hsj.external.theatreofbloodstats.TobConstants.DECIMAL_FORMAT;
+import static hsj.external.theatreofbloodstats.TobConstants.LINE_BREAK;
+import static hsj.external.theatreofbloodstats.TobConstants.formatPercent;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import lombok.Getter;
 import net.runelite.client.ui.overlay.infobox.InfoBox;
 import net.runelite.client.ui.overlay.infobox.InfoBoxPriority;
 import org.apache.commons.lang3.StringUtils;
 
-@Getter
 public class TheatreOfBloodStatsInfoBox extends InfoBox
 {
 
 	private final String room;
 	private final String time;
-	private final double percent;
 	private final String toolTipPercent;
 	private final String infoBoxPercent;
 	private final String damage;
@@ -47,29 +45,23 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 	private final TheatreOfBloodStatsConfig config;
 	private String tooltipText;
 
-
-	TheatreOfBloodStatsInfoBox(
+	protected TheatreOfBloodStatsInfoBox(
 		BufferedImage image,
 		TheatreOfBloodStatsConfig config,
 		TheatreOfBloodStatsPlugin plugin,
 		String room,
-		String time,
-		double percent,
-		String damage,
-		String splits,
-		String healed
+		RoomResult result
 	)
 	{
 		super(image, plugin);
 		this.config = config;
 		this.room = room;
-		this.time = StringUtils.substringBefore(time, ".");
-		this.percent = percent;
-		this.toolTipPercent = DECIMAL_FORMAT.format(percent) + "%";
-		this.infoBoxPercent = Math.round(percent) + "%";
-		this.damage = damage;
-		this.splits = splits;
-		this.healed = healed;
+		this.time = StringUtils.substringBefore(result.getRoomTime(), ".");
+		this.toolTipPercent = formatPercent(result.getPercent()) + "%";
+		this.infoBoxPercent = Math.round(result.getPercent()) + "%";
+		this.damage = result.getDamage();
+		this.splits = result.getSplits();
+		this.healed = result.getHealing();
 		this.tooltipText = buildTooltip();
 		setPriority(InfoBoxPriority.LOW);
 	}
@@ -83,23 +75,23 @@ public class TheatreOfBloodStatsInfoBox extends InfoBox
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(room);
-		sb.append("</br>");
+		sb.append(LINE_BREAK);
 
 		if (config.infoBoxTooltipSplits() && !StringUtils.isEmpty(splits))
 		{
 			sb.append(splits);
 			if (config.infoBoxTooltipDmg() || config.infoBoxTooltipHealed())
 			{
-				sb.append("</br>");
+				sb.append(LINE_BREAK);
 			}
 		}
 
-		if (config.infoBoxTooltipDmg() && !StringUtils.isEmpty(damage) && !damage.equals("0"))
+		if (config.infoBoxTooltipDmg() && !StringUtils.isEmpty(damage))
 		{
 			sb.append(damage).append(" (").append(toolTipPercent).append(")");
 			if (config.infoBoxTooltipHealed())
 			{
-				sb.append("</br>");
+				sb.append(LINE_BREAK);
 			}
 		}
 
